@@ -1,3 +1,12 @@
 {
-  "recommendations": ["abrahamwilliam007.es7-javascript-class-snippets"]
+  "recommendations": [
+    "abrahamwilliam007.es7-javascript-class-snippets",
+    "xabikos.javascriptsnippets",
+    "leizongmin.node-module-intellisense",
+    "christian-kohler.path-intellisense",
+    "snlbaral.express-mongo-snippets",
+    "amandeepmittal.expressjs",
+    "adityasingh.expressjs-snippets",
+    "abdoseadaa.node-js-snippet"
+  ]
 }

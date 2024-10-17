@@ -3,6 +3,7 @@ import { Unit } from "../models/Unit";
 export const getAllUnits = (req, res) => {
   const units = new Unit.find();
   //   units
+  
   console.log("Alla Enheter");
 };
 
