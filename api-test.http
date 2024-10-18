@@ -1,0 +1,40 @@
+###
+GET http://localhost:8000/api/units
+
+
+
+### get singel unit
+
+GET http://localhost:8000/api/units
+
+
+### new Enhet
+
+
+POST http://localhost:8000/api/units 
+
+Content-Type: application/json
+
+{
+    "name": "Enhet 3 öst",
+    specialister: [{
+        name: "Ahmed",
+        phone: 0734754392,
+        email:"mukhtar1100@hotmail.com"
+    },
+    {
+        name: "Jenny",
+        phone: 0734754392,
+        email:"jenny@hotmail.com"
+    },
+    ]
+}
+
+### update unit
+
+PUT http://localhost:8000/api/units
+Content-Type: application/json
+
+{
+    name: "Enhet Öst 3"
+}

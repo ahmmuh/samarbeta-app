@@ -1,21 +1,37 @@
-import { Unit } from "../models/Unit";
+import { Unit } from "../models/Unit.js";
 
-export const getAllUnits = (req, res) => {
-  const units = new Unit.find();
-  //   units
-  
-  console.log("Alla Enheter");
+export const getAllUnits = async (req, res) => {
+  try {
+    const units = await Unit.find();
+    res.json(units);
+  } catch (error) {
+    res.status(500).json({ Message: "Internal Server Error" });
+  }
 };
 
 export const getUnitByID = (req, res) => {
+  res.status(200).json({ message: "Singel unit" });
   console.log("EN enhet");
 };
 
-export const createUnit = (req, res) => {
-  console.log("Enhet created");
+export const addSpecialToUnit = async (req, res) => {
+  const { unitId } = req.params;
 };
 
-export const updateUnt = (req, res) => {
+export const createUnit = async (req, res) => {
+  console.log("Hela Begäran: ", req.body);
+  const { name } = req.body;
+  try {
+    const newUnit = new Unit({ name });
+    await newUnit.save();
+    console.log("New Unit:", newUnit);
+    res.status(201).json(newUnit);
+  } catch (error) {
+    res.status(500).json({ Message: "Internal Server Error" });
+  }
+};
+
+export const updateUnit = (req, res) => {
   console.log("ENhet updated");
 };
 

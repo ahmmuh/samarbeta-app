@@ -1,4 +1,4 @@
-import personSchema from "./person";
+import personSchema from "./person.js";
 
 const specialSchema = personSchema;
 

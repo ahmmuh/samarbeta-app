@@ -1,14 +1,22 @@
 import express from "express";
 import getConnection from "./db/connection.js";
+import unitRouter from "./routes/unitRoute.js";
 
 const app = express();
-const port = (process.port = 5000);
+const port = 8000;
 
-app.get("/", (req, res) => {
-  res.status(200).json({ Response: "Successfully connected to MongoDB" });
+app.use(express.json());
+app.use((req, res, next) => {
+  console.log("Incoming request method:", req.method); // Loggar HTTP-metoden
+  console.log("Incoming request URL:", req.url); // Loggar URL
+  console.log("Incoming request headers:", req.headers); // Loggar headers
+  console.log("Incoming request body:", req.body); // Loggar body
+  next();
 });
 
-app.listen(() => {
+app.use("/api", unitRouter);
+
+app.listen(port, () => {
   console.log(`The Server listening on port ${port}`);
   getConnection();
 });
