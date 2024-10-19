@@ -4,15 +4,14 @@ import unitRouter from "./routes/unitRoute.js";
 
 const app = express();
 const port = 8000;
-
 app.use(express.json());
-app.use((req, res, next) => {
-  console.log("Incoming request method:", req.method); // Loggar HTTP-metoden
-  console.log("Incoming request URL:", req.url); // Loggar URL
-  console.log("Incoming request headers:", req.headers); // Loggar headers
-  console.log("Incoming request body:", req.body); // Loggar body
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log("Incoming request method:", req.method); // Loggar HTTP-metoden
+//   console.log("Incoming request URL:", req.url); // Loggar URL
+//   console.log("Incoming request headers:", req.headers); // Loggar headers
+//   console.log("Incoming request body:", req.body); // Loggar body
+//   next();
+// });
 
 app.use("/api", unitRouter);
 

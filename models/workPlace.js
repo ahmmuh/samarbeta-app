@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import cleanerSchema from "./Cleaner";
+import cleanerSchema from "./Cleaner.js";
 
 const workplaceSchema = mongoose.Schema({
   name: String,
@@ -8,3 +8,4 @@ const workplaceSchema = mongoose.Schema({
 });
 
 export default mongoose.model("WorkPlace", workplaceSchema);
+  

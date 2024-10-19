@@ -1,9 +1,10 @@
 import mongoose from "mongoose";
 
 const personSchema = mongoose.Schema({
-    name: String,
-    phone: String,
-    email: String,
+  name: String,
+  phone: String,
+  email: String,
 });
 
-export default personSchema
+const Person = mongoose.model("Person", personSchema);
+export default Person;

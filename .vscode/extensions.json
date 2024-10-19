@@ -1,13 +1,7 @@
 {
-  "recommendations": [
-    "xabikos.javascriptsnippets",
-    "leizongmin.node-module-intellisense",
-    "christian-kohler.path-intellisense",
-    "snlbaral.express-mongo-snippets",
-    "amandeepmittal.expressjs",
-    "adityasingh.expressjs-snippets",
-    "abdoseadaa.node-js-snippet",
-    "humao.rest-client",
-    "roerohan.mongo-snippets-for-node-js"
-  ]
+    "recommendations": [
+        "leizongmin.node-module-intellisense",
+        "abdoseadaa.node-js-snippet",
+        "brpereyra.super-mongoose"
+    ]
 }
