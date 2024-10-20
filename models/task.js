@@ -1,9 +1,11 @@
 import mongoose from "mongoose";
 
-const taskSchema = mongoose.Schema({
+const taskSchema = new mongoose.Schema({
   title: String,
   description: String,
-  completed: { type: Boolean, default: "Pending" },
+  // completed: { type: Boolean, default: "Pending" },
 });
 
-export default mongoose.model("Task", taskSchema);
+const Task = mongoose.model("Task", taskSchema);
+
+export default Task;

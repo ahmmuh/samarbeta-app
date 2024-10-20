@@ -7,5 +7,6 @@ const unitSchema = new mongoose.Schema({
   // image: String,
   // active: Boolean,
   specialister: [{ type: mongoose.Schema.Types.ObjectId, ref: "Specialist" }],
+  tasks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Task" }],
 });
 export const Unit = mongoose.model("Unit", unitSchema);
