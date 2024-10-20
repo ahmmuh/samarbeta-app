@@ -1,11 +1,11 @@
 import mongoose from "mongoose";
-import cleanerSchema from "./Cleaner.js";
 
 const workplaceSchema = mongoose.Schema({
   name: String,
   location: String,
-  cleaners: [cleanerSchema],
+  cleaners: [{ type: mongoose.Schema.Types.ObjectId, ref: "Cleaner" }],
 });
 
-export default mongoose.model("WorkPlace", workplaceSchema);
-  
+const WorkPlace = mongoose.model("WorkPlace", workplaceSchema);
+
+export default WorkPlace;

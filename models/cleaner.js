@@ -1,5 +1,11 @@
-import personSchema from "./person.js";
+import mongoose from "mongoose";
 
-const cleanerSchema = personSchema;
+const cleanerSchema = new mongoose.Schema({
+  name: String,
+  phone: String,
+  email: String,
+});
 
-export default cleanerSchema;
+const Cleaner = mongoose.model("Cleaner", cleanerSchema);
+
+export default Cleaner;

@@ -1,9 +1,11 @@
 import mongoose from "mongoose";
-import personSchema from "./person";
 
 const chefSchema = mongoose.Schema({
-  ...personSchema.obj,
-  role: { type: String, default: "Chef" },
+  name: String,
+  phone: String,
+  email: String,
 });
 
-export const Chef = mongoose.model("Chef", chefSchema);
+const Chef = mongoose.model("Chef", chefSchema);
+
+export default Chef;
