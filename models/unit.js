@@ -6,7 +6,7 @@ const unitSchema = new mongoose.Schema({
   },
   // image: String,
   // active: Boolean,
-  chef: [{ type: mongoose.Schema.Types.ObjectId, ref: "Chef" }],
+  chefer: { type: mongoose.Schema.Types.ObjectId, ref: "Chef" },
   specialister: [{ type: mongoose.Schema.Types.ObjectId, ref: "Specialist" }],
   tasks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Task" }],
   workPlaces: [{ type: mongoose.Schema.Types.ObjectId, ref: "WorkPlace" }],
