@@ -10,7 +10,7 @@ import {
 const taskRoute = express.Router();
 
 //Tasks
-taskRoute.get("/tasks", getAllTasks);
+taskRoute.get("/units/:unitId/tasks", getAllTasks);
 taskRoute.put("/units/:unitId/tasks", addTaskToUnit);
 taskRoute.put("/units/:unitId/tasks/:taskId", updateTask);
 taskRoute.get("/units/:unitId/tasks/:taskId", getTask);

@@ -1,3 +1,4 @@
+import { populate } from "dotenv";
 import Specialist from "../models/specialist.js";
 import Task from "../models/task.js";
 import { Unit } from "../models/unit.js";
@@ -13,8 +14,12 @@ export const getAllUnits = async (req, res) => {
 
 export const getUnitByID = async (req, res) => {
   try {
-    const units = await Unit.find();
-    res.status(200).json({ message: "Singel unit" });
+    const units = await Unit.find()
+      .populate("tasks")
+      .populate("specialister")
+      .populate("chefer")
+      .populate("tasks");
+    res.status(200).json(units);
     console.log("EN enhet");
   } catch (error) {}
 };
