@@ -1,20 +1,25 @@
 // get alla taskska via unit
 
-import { Unit } from "../models/unit";
+import Task from "../models/task.js";
+import { Unit } from "../models/unit.js";
 
 export const addTaskToUnit = async (req, res) => {
   const { unitId } = req.params;
 
   try {
     const { title, description } = req.body;
+    console.log("Tasks from body", req.body);
+
     const unit = await Unit.findById(unitId);
     if (!unit)
       return res
         .status(400)
         .json({ message: "Enheten finns inte i databasen!" });
+    console.log("unitId", unitId);
     const newTask = new Task({ title, description });
     await newTask.save();
     unit.tasks.push(newTask._id);
+    console.log("New task", unit);
     unit.save();
     res.status(200).json({ message: "En task har lagts till enheten" });
   } catch (error) {

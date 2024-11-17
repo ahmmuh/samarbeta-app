@@ -2,33 +2,34 @@
 
 import Specialist from "../models/specialist.js";
 import { Unit } from "../models/unit.js";
+import WorkPlace from "../models/workPlace.js";
 
-export const addSpecialistToUnit = async (req, res) => {
+export const addWorkPlaceToUnit = async (req, res) => {
   try {
     const { unitId } = req.params;
     console.log("Unit ID", unitId);
-    const { name, phone, email } = req.body;
-    console.log("Specialister from body", req.body);
-    const units = await Unit.findById(unitId);
-    if (!units)
+    const { name, location } = req.body;
+    console.log("workplaces from body", req.body);
+    const unit = await Unit.findById(unitId);
+    if (!unit)
       return res.status(400).json({ message: "Enheten hittades inte" });
 
-    const existingSpecialist = await Specialist.findOne({ email });
-    if (existingSpecialist) {
+    const workPlace = await WorkPlace.findOne({ name });
+    if (workPlace) {
       return res.status(400).json({
-        Message: "Denna specialist finns redan i systemet",
-        specialist: existingSpecialist,
+        Message: "Denna WorkPlace finns redan i systemet",
+        WorkPlace: workPlace,
       });
     }
 
-    const specialist = new Specialist({ name, phone, email });
-    await specialist.save();
-    units.specialister.push(specialist._id);
-    console.log("Specialist ID ", specialist._id);
-    console.log("Unit med specialist", units);
-    await units.save();
+    const newWorkplace = new WorkPlace({ name, location });
+    await newWorkplace.save();
+    unit.workPlaces.push(newWorkplace._id);
+    console.log("Specialist ID ", newWorkplace._id);
+    console.log("Unit med workplace", unit);
+    await unit.save();
 
-    res.status(201).json({ message: "En specialist lagts till enhet" });
+    res.status(201).json({ message: "En workplace lagts till enhet" });
   } catch (error) {
     console.log("Error", error);
     res
@@ -37,64 +38,64 @@ export const addSpecialistToUnit = async (req, res) => {
   }
 };
 
-export const getAllSpecialist = async (req, res) => {
+export const getAllWorkPlaces = async (req, res) => {
   try {
-    const specialister = await Unit.find().populate("specialister");
-    return res.status(200).json(specialister);
+    const workPlaces = await Unit.find().populate("workPlaces");
+    return res.status(200).json(workPlaces);
   } catch (error) {
     console.log("Error", error.message);
     return res.status(500).json({ message: "Internal Server Error", error });
   }
 };
 
-export const updateSpecialist = async (req, res) => {
+export const updateWorkPlace = async (req, res) => {
   try {
-    const { unitId, specialistId } = req.params;
-    if (!specialistId)
-      return res.status(400).json({ message: "Specialist finns inte" });
+    const { unitId, workplaceId } = req.params;
 
     const unit = await Unit.findById(unitId);
     if (!unit) return res.status(400).json({ message: "Enheten finns inte" });
 
-    const updatedSpecialist = await Specialist.findByIdAndUpdate(
-      specialistId,
+    const updatedWorkplace = await workPlace.findByIdAndUpdate(
+      workplaceId,
       req.body,
       {
         new: true,
       }
     );
-    if (!updatedSpecialist)
-      return res.status(400).json({ message: "Specialist finns inte" });
-    return res.status(204).json(updatedSpecialist);
+    if (!updatedWorkplace)
+      return res.status(400).json({ message: "updatedWorkplace finns inte" });
+    return res.status(204).json(updatedWorkplace);
   } catch (error) {
     console.log("Error", error.message);
     return res.status(500).json({ message: "Internal Server Error", error });
   }
 };
 
-export const getSpecialist = async (req, res) => {
+export const getWorkPlace = async (req, res) => {
   try {
-    const { specialistId, unitId } = req.params;
+    const { workplaceId, unitId } = req.params;
 
-    const unit = await Unit.findById(unitId).populate("specialister");
+    const unit = await Unit.findById(unitId).populate("workplaces");
     if (!unit) return res.status(400).json({ message: "Enhet noy found" });
 
-    const specialist = unit.specialister.find(
-      (t) => t._id.toString() === specialistId
+    const workplace = unit.workPlaces.find(
+      (t) => t._id.toString() === workplaceId
     );
-    if (!specialist)
+    if (!workplace)
       return res.status(400).json({ message: "specialist not found" });
-    res.status(200).json(specialist);
+    res.status(200).json(workplace);
   } catch (error) {
     console.log("Error", error.message);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
 
+//fixa sen
+
 export const deleteSpecialist = async (req, res) => {
-  const { specialistId, unitId } = req.params;
+  const { workplaceId, unitId } = req.params;
   try {
-    const unit = await Unit.findById(unitId).populate("specialister");
+    const unit = await Unit.findById(unitId).populate("workplaces");
     if (!unit) return res.status(400).json({ message: "Enhet hittades inte" });
 
     const updatedSpecialister = unit.specialister.filter(
