@@ -24,13 +24,13 @@ app.use("/api", taskRoute);
 
 app.use("/api", workplaceRoute);
 // Optional logging middleware (can be uncommented for debugging)
-app.use((req, res, next) => {
-  console.log("Incoming request method:", req.method); // Log the HTTP method
-  console.log("Incoming request URL:", req.url); // Log the request URL
-  console.log("Incoming request headers:", req.headers); // Log the request headers
-  console.log("Incoming request body:", req.body); // Log the request body
-  next(); // Pass control to the next middleware or route handler
-});
+// app.use((req, res, next) => {
+//   console.log("Incoming request method:", req.method); // Log the HTTP method
+//   console.log("Incoming request URL:", req.url); // Log the request URL
+//   console.log("Incoming request headers:", req.headers); // Log the request headers
+//   console.log("Incoming request body:", req.body); // Log the request body
+  // next(); // Pass control to the next middleware or route handler
+// });
 app.listen(port, () => {
   console.log(`The Server listening on port ${port}`);
   getConnection();

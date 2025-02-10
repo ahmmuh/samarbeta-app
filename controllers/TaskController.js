@@ -30,7 +30,8 @@ export const addTaskToUnit = async (req, res) => {
 
 export const getAllTasks = async (req, res) => {
   try {
-    const tasks = await Unit.find().populate("tasks");
+    const { unitId } = req.params;
+    const tasks = await Unit.findById(unitId).populate("tasks");
     return res.status(200).json(tasks);
   } catch (error) {
     console.log("Error", error.message);

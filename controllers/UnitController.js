@@ -30,14 +30,19 @@ export const getAllUnits = async (req, res) => {
 
 export const getUnitByID = async (req, res) => {
   try {
-    const units = await Unit.find()
-      // .populate("tasks")
+    const { unitId } = req.params;
+    const unit = await Unit.findById(unitId)
+      .populate("tasks")
       .populate("specialister")
-      // .populate("chef")
-      .populate("tasks");
-    res.status(200).json(units);
-    console.log("Ee enhet");
-  } catch (error) {}
+      .populate("chef");
+    if (!unit) {
+      return res.status(404).json({ message: "Enheten hittades inte" });
+    }
+    res.status(200).json(unit);
+  } catch (error) {
+    console.error("Fel vid hämtning av enhet ", error.message);
+    res.status(500).json({ message: "Serverfel" });
+  }
 };
 
 export const createUnit = async (req, res) => {

@@ -40,13 +40,38 @@ export const addWorkPlaceToUnit = async (req, res) => {
 
 export const getAllWorkPlaces = async (req, res) => {
   try {
-    const workPlaces = await Unit.find().populate("workPlaces");
-    return res.status(200).json(workPlaces);
+    const { unitId } = req.params;
+    console.log("UNIT ID IN WORK PLACE CONTROLLER, ", unitId);
+    const workplaces = await Unit.findById(unitId).populate("workPlaces");
+
+    console.log("Founded workPlaces ", workplaces);
+
+    if (!workplaces || workplaces.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No.workPlaces found for this unit" });
+    }
+    console.log("WORKPLACE DATA: ", workplaces);
+    return res.status(200).json(workplaces);
   } catch (error) {
     console.log("Error", error.message);
     return res.status(500).json({ message: "Internal Server Error", error });
   }
 };
+
+// export const getAllWorkPlaces = async (req, res) => {
+//   try {
+//     const { unitId } = req.params;
+//     const foundedWorkPlace = await Unit.findById(unitId).populate("workPlaces");
+//     if (!foundedWorkPlace.workPlaces) {
+//       return res.status(404).json({ message: "Workplace not founded" });
+//     }
+//     return res.status(200).json(foundedWorkPlace.workPlaces);
+//   } catch (error) {
+//     console.log("Error", error.message);
+//     return res.status(500).json({ message: "Internal Server Error", error });
+//   }
+// };
 
 export const updateWorkPlace = async (req, res) => {
   try {
@@ -76,14 +101,15 @@ export const getWorkPlace = async (req, res) => {
     const { workplaceId, unitId } = req.params;
 
     const unit = await Unit.findById(unitId).populate("workplaces");
-    if (!unit) return res.status(400).json({ message: "Enhet noy found" });
+    if (!unit) return res.status(400).json({ message: "Enhet not found" });
 
     const workplace = unit.workPlaces.find(
       (t) => t._id.toString() === workplaceId
     );
     if (!workplace)
-      return res.status(400).json({ message: "specialist not found" });
+      return res.status(400).json({ message: "workplaces not found" });
     res.status(200).json(workplace);
+    console.log("Workplace in server sidan: ", workplace);
   } catch (error) {
     console.log("Error", error.message);
     return res.status(500).json({ message: "Internal server error" });

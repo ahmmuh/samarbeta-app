@@ -4,14 +4,11 @@ import {
   deleteSpecialist,
   getAllSpecialister,
   getSpecialist,
-  getTestSpecialister,
   updateSpecialist,
 } from "../controllers/SpecialistController.js";
 //Router för specialister
 
 const specialistRoute = express.Router();
-
-specialistRoute.get("/specialister", getTestSpecialister);
 
 specialistRoute.put("/units/:unitId/specialister", addSpecialistToUnit);
 

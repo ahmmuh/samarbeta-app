@@ -3,14 +3,15 @@ import {
   addWorkPlaceToUnit,
   getAllWorkPlaces,
   getWorkPlace,
-} from "../controllers/WorkplaeController.js";
+  updateWorkPlace,
+} from "../controllers/WorkplaceController.js";
 
 const workplaceRoute = express.Router();
 
-workplaceRoute.get("/units", getAllWorkPlaces);
-workplaceRoute.get("/units/:unitId", getWorkPlace);
-workplaceRoute.put("/units/:unitId/workplaces", addWorkPlaceToUnit);
-// workplaceRoute.put("/units/:unitId", updateUnit);
-// workplaceRoute.delete("/units/:unitId", deleteUnit);
+workplaceRoute.get("/units/:unitId/workPlaces", getAllWorkPlaces);
+workplaceRoute.get("/units/:unitId/workPlaces/:workplaceId", getWorkPlace);
+workplaceRoute.put("/units/:unitId/workPlaces", addWorkPlaceToUnit);
+workplaceRoute.put("/units/:unitId/workPlaces/:workplaceId", updateWorkPlace);
+// workplaceRoute.delete("/units/:unitId/workplaces/workplaceId", delete); fixa lite senare
 
 export default workplaceRoute;

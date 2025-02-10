@@ -4,6 +4,7 @@ const chefSchema = new mongoose.Schema({
   name: String,
   phone: String,
   email: String,
+  isAtWork: Boolean,
   photo: String,
 });
 
