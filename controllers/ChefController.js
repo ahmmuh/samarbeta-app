@@ -9,7 +9,7 @@ export const addChefToUnit = async (req, res) => {
     console.log("Unit ID", unitId);
 
     const { name, phone, email, photo } = req.body;
-    console.log("Chef from body", req.body);
+    console.log("New Chef from body", req.body);
     const unit = await Unit.findById(unitId);
     console.log("Unit founded", unit);
 
@@ -80,11 +80,13 @@ export const getAllChefer = async (req, res) => {
 export const updateChef = async (req, res) => {
   try {
     const { unitId, chefId } = req.params;
-    const unit = await Unit.findById(unitId);
-    if (!unit) return res.status(400).json({ message: "Enheten finns inte" });
 
-    const chef = await Chef.findById(chefId);
-    if (!chef) return res.status(400).json({ message: "chef finns inte" });
+    if (!unitId || !chefId) {
+      return res.status(400).json({ message: "Unit ID eller Chef ID saknas" });
+    }
+
+    const unit = await Unit.findById(unitId);
+    if (!unit) return res.status(404).json({ message: "Enheten finns inte" });
 
     const updatedChef = await Chef.findByIdAndUpdate(chefId, req.body, {
       new: true,
@@ -97,14 +99,12 @@ export const updateChef = async (req, res) => {
       });
     }
 
-    updatedChef.save();
-
     return res.status(200).json({
-      message: `Chef ${updateChef.name} har uppdaterats.`,
+      message: `Chef ${updatedChef.name} har uppdaterats.`,
       updatedChef,
     });
   } catch (error) {
-    console.log("Error", error.message);
+    console.error("Error", error.message);
     return res.status(500).json({ message: "Internal Server Error", error });
   }
 };

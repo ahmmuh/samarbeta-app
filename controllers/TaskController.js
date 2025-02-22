@@ -28,18 +28,30 @@ export const addTaskToUnit = async (req, res) => {
     return res.status(500).json({ Message: "Error", error });
   }
 };
-// update status för task
-
-// export const taskStarted = async (req, res) => {
-//   try {
-//     const { unitId, taskId } = req.params;
-//     if (!unitId || !taskId) {
-//       console.log(`The unit med ${unitId} OR ${taskId} not found`);
-//     }
-//     const unit = await Unit.findById(unitId);
-
-//   } catch (error) {}
-// };
+//assign task to unit
+export const assignTaskToUnit = async (req, res) => {
+  try {
+    const { taskId, unitId } = req.params;
+    const unit = await Unit.findById(unitId);
+    if (!unit)
+      return res.status(404).json({
+        message:
+          "Det går inte att tilldela en uppgift med någon enhet som inte finns",
+      });
+    const task = await Task.findById(taskId);
+    if (!task) {
+      return res.status(404).json({ message: "Task finns inte" });
+    }
+    task.unit = unitId;
+    await task.save();
+    return res.status(200).json({
+      message: `Enhet med ID ${unitId} har tagit på sig en task med ID ${taskId} `,
+    });
+  } catch (error) {
+    console.error("Server error vid tilldelning av uppgift:", error);
+    return res.status(500).json({ message: "Internt serverfel" });
+  }
+};
 export const getAllTasks = async (req, res) => {
   try {
     const { unitId } = req.params;
@@ -72,7 +84,7 @@ export const updateTask = async (req, res) => {
       new: true,
       runValidators: true,
     });
-    
+
     return res.status(200).json(updatedTask);
   } catch (error) {
     console.error("Error", error.message);
