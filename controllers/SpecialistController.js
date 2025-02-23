@@ -79,6 +79,7 @@ export const getAllSpecialister = async (req, res) => {
 export const updateSpecialist = async (req, res) => {
   try {
     const { unitId, specialistId } = req.params;
+    console.log("Hela body i backend", req.body);
 
     console.log("DEBUG - unitId:", unitId);
     console.log("DEBUG - specialistId:", specialistId);
@@ -90,12 +91,8 @@ export const updateSpecialist = async (req, res) => {
     }
 
     // Kontrollera att specialisten tillhör enheten
-    const unit = await Unit.findOne({ _id: unitId, specialists: specialistId });
-    if (!unit) {
-      return res
-        .status(404)
-        .json({ message: "Specialist eller enhet hittades inte" });
-    }
+    const unit = await Unit.findById(unitId);
+    if (!unit) return res.status(404).json({ message: "Enheten finns inte" });
 
     // Uppdatera specialisten
     const updatedSpecialist = await Specialist.findByIdAndUpdate(
@@ -105,10 +102,12 @@ export const updateSpecialist = async (req, res) => {
     );
 
     if (!updatedSpecialist) {
-      return res.status(404).json({ message: "Specialist finns inte" });
+      return res.status(400).json({ message: "Ingen uppdatering har gjorts" });
     }
 
-    return res.status(200).json(updatedSpecialist);
+    return res
+      .status(200)
+      .json(`Specialist med följande ID ${specialistId} har uppdaterats`);
   } catch (error) {
     console.error("Serverfel vid uppdatering av specialist:", error);
     return res
