@@ -20,7 +20,7 @@ export const addSpecialistToUnit = async (req, res) => {
   try {
     const { unitId } = req.params;
     console.log("Unit ID", unitId);
-    const { name, phone, email, photo } = req.body;
+    const { name, phone, email } = req.body;
     console.log("Specialister from body", req.body);
     const unit = await Unit.findById(unitId);
     if (!unit)
@@ -34,7 +34,7 @@ export const addSpecialistToUnit = async (req, res) => {
       });
     }
 
-    const specialist = new Specialist({ name, phone, email, photo });
+    const specialist = new Specialist({ name, phone, email });
     await specialist.save();
     unit.specialister.push(specialist._id);
     console.log("Specialist ID ", specialist._id);
@@ -79,25 +79,41 @@ export const getAllSpecialister = async (req, res) => {
 export const updateSpecialist = async (req, res) => {
   try {
     const { unitId, specialistId } = req.params;
-    if (!specialistId)
-      return res.status(400).json({ message: "Specialist finns inte" });
 
-    const unit = await Unit.findById(unitId);
-    if (!unit) return res.status(400).json({ message: "Enheten finns inte" });
+    console.log("DEBUG - unitId:", unitId);
+    console.log("DEBUG - specialistId:", specialistId);
+    // Kontrollera att både unitId och specialistId finns
+    if (!unitId || !specialistId) {
+      return res
+        .status(400)
+        .json({ message: "unitId eller specialistId saknas" });
+    }
 
+    // Kontrollera att specialisten tillhör enheten
+    const unit = await Unit.findOne({ _id: unitId, specialists: specialistId });
+    if (!unit) {
+      return res
+        .status(404)
+        .json({ message: "Specialist eller enhet hittades inte" });
+    }
+
+    // Uppdatera specialisten
     const updatedSpecialist = await Specialist.findByIdAndUpdate(
       specialistId,
       req.body,
-      {
-        new: true,
-      }
+      { new: true }
     );
-    if (!updatedSpecialist)
-      return res.status(400).json({ message: "Specialist finns inte" });
-    return res.status(204).json(updatedSpecialist);
+
+    if (!updatedSpecialist) {
+      return res.status(404).json({ message: "Specialist finns inte" });
+    }
+
+    return res.status(200).json(updatedSpecialist);
   } catch (error) {
-    console.log("Error", error.message);
-    return res.status(500).json({ message: "Internal Server Error", error });
+    console.error("Serverfel vid uppdatering av specialist:", error);
+    return res
+      .status(500)
+      .json({ message: "Internt serverfel", error: error.message });
   }
 };
 

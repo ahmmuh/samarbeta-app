@@ -5,7 +5,7 @@ const specialSchema = new mongoose.Schema(
     name: String,
     phone: String,
     email: String,
-    photo: String,
+    // photo?: String,
   },
   {
     timestamps: { createdAt: "skapats", updatedAt: "Uppdaterats" },
