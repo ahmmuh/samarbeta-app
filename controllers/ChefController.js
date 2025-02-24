@@ -16,19 +16,6 @@ export const addChefToUnit = async (req, res) => {
     if (!unit)
       return res.status(404).json({ message: "Enheten hittades inte" });
 
-    // console.log("unit.chef:", unit.chef); // Logga vad den faktiskt är
-
-    // if (unit.chef !== null && unit.chef !== undefined) {
-    //   return res.status(400).json({ message: "Enheten har redan en chef" });
-    // }
-
-    // if (unit.chef === null) {
-    //   return res.status(400).json({ message: "Enheten har redan en chef" });
-    // }
-    // if (await Unit.exists({ _id: unitId, chef: { $ne: null } })) {
-    //   return res.status(400).json({ message: "Enheten har redan en chef" });
-    // }
-
     if (!name || !phone || !email) {
       return res.status(400).json({ message: "Alla fält måste fyllas i" });
     }

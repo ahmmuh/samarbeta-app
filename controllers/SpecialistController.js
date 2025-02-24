@@ -19,26 +19,18 @@ export const getTestSpecialister = async (req, res) => {
 export const addSpecialistToUnit = async (req, res) => {
   try {
     const { unitId } = req.params;
-    console.log("Unit ID", unitId);
+    console.log("Unit ID i addSpecialistToUnit", unitId);
     const { name, phone, email } = req.body;
-    console.log("Specialister from body", req.body);
+    console.log("Specialister from body : addSpecialistToUnit", req.body);
     const unit = await Unit.findById(unitId);
     if (!unit)
       return res.status(400).json({ message: "Enheten hittades inte" });
 
-    const existingSpecialist = await Specialist.findOne({ email });
-    if (existingSpecialist) {
-      return res.status(400).json({
-        Message: "Denna specialist finns redan i systemet",
-        specialist: existingSpecialist,
-      });
-    }
-
     const specialist = new Specialist({ name, phone, email });
     await specialist.save();
     unit.specialister.push(specialist._id);
-    console.log("Specialist ID ", specialist._id);
-    console.log("Unit med specialist", unit);
+    console.log("Specialist ID i addSpecialistToUnit", specialist._id);
+    console.log("Unit med specialist i addSpecialistToUnit", unit);
     await unit.save();
 
     res.status(201).json({ message: "En specialist lagts till enhet" });
