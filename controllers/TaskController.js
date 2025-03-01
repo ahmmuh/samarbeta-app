@@ -69,7 +69,7 @@ export const updateTask = async (req, res) => {
   try {
     const { unitId, taskId } = req.params;
 
-    console.log("UnidID & taskId i updateTask function", unitId, taskId);
+    console.log("UnitID & taskId i updateTask function", unitId, taskId);
 
     const unit = await Unit.findById(unitId);
     if (!unit) return res.status(400).json({ message: "Enheten finns inte" });
@@ -106,6 +106,27 @@ export const getTask = async (req, res) => {
   } catch (error) {
     console.log("Error", error.message);
     return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getTaskStatuses = async (req, res) => {
+  const { unitId } = req.params;
+  console.log("UNIT ID in getTaskStatuses");
+  try {
+    const unit = await Unit.findById(unitId).populate("tasks");
+    if (!unit) {
+      return res.status(404).json({ message: "Enheten hittades inte" });
+    }
+
+    const statuses = [...new Set(unit.tasks.map((task) => task.completed))];
+
+    if (statuses.length === 0) {
+      return res.status(404).json({ message: "Ingen statusar hittades" });
+    }
+    res.status(200).json(statuses);
+  } catch (error) {
+    console.warn(`Error Message: ${error.message}`);
+    res.status(500).json({ message: "Serverfel", error: error.message });
   }
 };
 

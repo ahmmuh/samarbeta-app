@@ -5,6 +5,7 @@ import {
   deleteTask,
   getAllTasks,
   getTask,
+  getTaskStatuses,
   updateTask,
 } from "../controllers/TaskController.js";
 
@@ -17,5 +18,6 @@ taskRoute.put("/units/:unitId/tasks/:taskId", assignTaskToUnit);
 taskRoute.put("/units/:unitId/tasks/:taskId", updateTask);
 taskRoute.get("/units/:unitId/tasks/:taskId", getTask);
 taskRoute.delete("/units/:unitId/tasks/:taskId", deleteTask);
+taskRoute.get("/units/:unitId/tasks/statuses", getTaskStatuses);
 
 export default taskRoute;
