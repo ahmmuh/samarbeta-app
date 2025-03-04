@@ -6,7 +6,7 @@ import {
   getAllTasks,
   getTask,
   getTaskStatuses,
-  updateTask,
+  // updateTask,
 } from "../controllers/TaskController.js";
 
 const taskRoute = express.Router();
@@ -15,7 +15,7 @@ const taskRoute = express.Router();
 taskRoute.get("/units/:unitId/tasks", getAllTasks);
 taskRoute.put("/units/:unitId/tasks", addTaskToUnit);
 taskRoute.put("/units/:unitId/tasks/:taskId", assignTaskToUnit);
-taskRoute.put("/units/:unitId/tasks/:taskId", updateTask);
+// taskRoute.put("/units/:unitId/tasks/:taskId", updateTask);
 taskRoute.get("/units/:unitId/tasks/:taskId", getTask);
 taskRoute.delete("/units/:unitId/tasks/:taskId", deleteTask);
 taskRoute.get("/units/:unitId/tasks/statuses", getTaskStatuses);

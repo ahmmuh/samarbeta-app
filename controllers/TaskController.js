@@ -65,33 +65,33 @@ export const getAllTasks = async (req, res) => {
 };
 
 //fixa sen
-export const updateTask = async (req, res) => {
-  try {
-    const { unitId, taskId } = req.params;
+// export const updateTask = async (req, res) => {
+//   try {
+//     const { unitId, taskId } = req.params;
 
-    console.log("UnitID & taskId i updateTask function", unitId, taskId);
+//     console.log("UnitID & taskId i updateTask function", unitId, taskId);
 
-    const unit = await Unit.findById(unitId);
-    if (!unit) return res.status(400).json({ message: "Enheten finns inte" });
+//     const unit = await Unit.findById(unitId);
+//     if (!unit) return res.status(400).json({ message: "Enheten finns inte" });
 
-    const task = await Task.findById(taskId);
-    if (!task) return res.status(404).json({ message: "Task finns inte" });
+//     const task = await Task.findById(taskId);
+//     if (!task) return res.status(404).json({ message: "Task finns inte" });
 
-    if (Object.keys(req.body).length === 0) {
-      return res.status(404).json({ message: "Inga uppdateringar skickades" });
-    }
+//     // if (Object.keys(req.body).length === 0) {
+//     //   return res.status(404).json({ message: "Inga uppdateringar skickades" });
+//     // }
 
-    const updatedTask = await Task.findByIdAndUpdate(taskId, req.body, {
-      new: true,
-      runValidators: true,
-    });
+//     const updatedTask = await Task.findByIdAndUpdate(taskId, req.body, {
+//       new: true,
+//       runValidators: true,
+//     });
 
-    return res.status(200).json(updatedTask);
-  } catch (error) {
-    console.error("Error", error.message);
-    return res.status(500).json({ message: "Internal Server Error", error });
-  }
-};
+//     return res.status(200).json(updatedTask);
+//   } catch (error) {
+//     console.error("Error", error.message);
+//     return res.status(500).json({ message: "Internal Server Error", error });
+//   }
+// };
 
 export const getTask = async (req, res) => {
   try {
