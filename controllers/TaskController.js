@@ -33,6 +33,7 @@ export const addTaskToUnit = async (req, res) => {
 export const assignTaskToUnit = async (req, res) => {
   try {
     const { taskId, unitId } = req.params;
+    const { completed } = req.body;
     const unit = await Unit.findById(unitId);
     if (!unit)
       return res.status(404).json({
@@ -44,7 +45,15 @@ export const assignTaskToUnit = async (req, res) => {
       return res.status(404).json({ message: "Task finns inte" });
     }
     task.unit = unitId;
+
+    if (completed) {
+      task.completed = completed;
+    }
+    unit.tasks.push(task);
+    await unit.save();
+    console.log("TASK WICH WILL BE UPDATED IN THE DATABASE IS: ", task);
     await task.save();
+
     return res.status(200).json({
       message: `Enhet med ID ${unitId} har tagit på sig en task med ID ${taskId} `,
     });
