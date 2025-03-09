@@ -1,7 +1,7 @@
 import axios from "axios";
 import { response } from "express";
 
-const GOOGLE_PLACES_API_KEY = "AIzaSyABxgJhxqWUnWriCRrLhbZdKbVZxmUbTao";
+const GOOGLE_PLACES_API_KEY = "";
 const BASE_URL = "https://maps.googleapis.com/maps/api/place";
 
 export const getPlaces = async (req, res) => {
@@ -12,6 +12,8 @@ export const getPlaces = async (req, res) => {
     if (!query) {
       return res.status(400).json({ message: "Query Parameter is required" });
     }
+
+    console.log("Query Params:", req.query);
 
     const response = await axios.get(`${BASE_URL}/textsearch/json`, {
       params: {
