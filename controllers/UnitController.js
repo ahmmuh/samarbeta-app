@@ -34,7 +34,9 @@ export const getUnitByID = async (req, res) => {
     const unit = await Unit.findById(unitId)
       .populate("tasks")
       .populate("specialister")
-      .populate("chef");
+      .populate("chef")
+      .populate("workPlaces");
+
     if (!unit) {
       return res.status(404).json({ message: "Enheten hittades inte" });
     }

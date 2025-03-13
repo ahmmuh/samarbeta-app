@@ -12,24 +12,29 @@ export const addWorkPlaceToUnit = async (req, res) => {
     console.log("workplaces from body", req.body);
     const unit = await Unit.findById(unitId);
     if (!unit)
-      return res.status(400).json({ message: "Enheten hittades inte" });
+      return res.status(404).json({ message: "Enheten hittades inte" });
 
-    const workPlace = await WorkPlace.findOne({ name });
-    if (workPlace) {
+    const existingWorkPlace = await WorkPlace.findOne({ name });
+
+    if (existingWorkPlace && unit.workPlaces.includes(existingWorkPlace._id)) {
       return res.status(400).json({
-        Message: "Denna WorkPlace finns redan i systemet",
-        WorkPlace: workPlace,
+        message: "Denna WorkPlace finns redan i systemet",
+        workPlace: existingWorkPlace,
       });
     }
 
     const newWorkplace = new WorkPlace({ name, location });
     await newWorkplace.save();
     unit.workPlaces.push(newWorkplace._id);
-    console.log("Specialist ID ", newWorkplace._id);
-    console.log("Unit med workplace", unit);
-    await unit.save();
 
-    res.status(201).json({ message: "En workplace lagts till enhet" });
+    await unit.save();
+    console.log("Ny arbetsplats skapad med ID:", newWorkplace._id);
+    console.log("Uppdaterad enhet:", unit);
+
+    res.status(201).json({
+      message: "Arbetsplats tillagd i enheten",
+      workPlace: newWorkplace,
+    });
   } catch (error) {
     console.log("Error", error);
     res
@@ -80,7 +85,7 @@ export const updateWorkPlace = async (req, res) => {
     const unit = await Unit.findById(unitId);
     if (!unit) return res.status(400).json({ message: "Enheten finns inte" });
 
-    const updatedWorkplace = await workPlace.findByIdAndUpdate(
+    const updatedWorkplace = await WorkPlace.findByIdAndUpdate(
       workplaceId,
       req.body,
       {
@@ -118,20 +123,20 @@ export const getWorkPlace = async (req, res) => {
 
 //fixa sen
 
-export const deleteSpecialist = async (req, res) => {
+export const deleteWorkplace = async (req, res) => {
   const { workplaceId, unitId } = req.params;
   try {
     const unit = await Unit.findById(unitId).populate("workplaces");
     if (!unit) return res.status(400).json({ message: "Enhet hittades inte" });
 
-    const updatedSpecialister = unit.specialister.filter(
-      (t) => t._id.toString() !== specialistId
+    const updatedWorkplace = unit.workPlaces.filter(
+      (t) => t._id.toString() !== workplaceId
     );
-    unit.specialister = updatedSpecialister;
+    unit.workPlaces = updatedWorkplace;
     await unit.save();
     return res
       .status(200)
-      .json({ message: "Deleted specialist", specialist: updatedSpecialister });
+      .json({ message: "Deleted specialist", workplace: updatedWorkplace });
   } catch (error) {
     console.log("Error", error.message);
     return res.status(500).json({ message: "Internal server error", error });
