@@ -103,16 +103,24 @@ export const updateWorkPlace = async (req, res) => {
 
 export const getWorkPlace = async (req, res) => {
   try {
-    const { workplaceId, unitId } = req.params;
+    const { unitId, workplaceId } = req.params;
 
-    const unit = await Unit.findById(unitId).populate("workplaces");
+    console.log("Unit ID:", unitId);
+    console.log("Workplace ID:", workplaceId);
+
+    const unit = await Unit.findById(unitId).populate("workPlaces");
     if (!unit) return res.status(400).json({ message: "Enhet not found" });
 
-    const workplace = unit.workPlaces.find(
+    console.log("Hittad enhet:", unit);
+    console.log("Hittade arbetsplatser:", unit.workPlaces);
+
+    const workplace = unit?.workPlaces?.find(
       (t) => t._id.toString() === workplaceId
     );
-    if (!workplace)
+    if (!workplace) {
       return res.status(400).json({ message: "workplaces not found" });
+    }
+
     res.status(200).json(workplace);
     console.log("Workplace in server sidan: ", workplace);
   } catch (error) {
