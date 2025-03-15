@@ -4,6 +4,7 @@ const taskSchema = new mongoose.Schema(
   {
     title: String,
     description: String,
+    location: String,
     completed: {
       type: String,
       enum: ["Ej påbörjat", "Påbörjat", "Färdigt"],

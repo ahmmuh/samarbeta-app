@@ -8,7 +8,7 @@ export const addTaskToUnit = async (req, res) => {
   const { unitId } = req.params;
 
   try {
-    const { title, description, completed } = req.body;
+    const { title, description, location, completed } = req.body;
     console.log("Tasks from body", req.body);
 
     const unit = await Unit.findById(unitId);
@@ -17,7 +17,7 @@ export const addTaskToUnit = async (req, res) => {
         .status(400)
         .json({ message: "Enheten finns inte i databasen!" });
     console.log("unitId", unitId);
-    const newTask = new Task({ title, description, completed });
+    const newTask = new Task({ title, description, location, completed });
     console.log("The new task with COMPLETED FUNCTION", newTask);
     await newTask.save();
     unit.tasks.push(newTask._id);
