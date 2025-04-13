@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
-import { userSchema } from "./user";
+import { userSchema } from "./user.js";
 
 const chefSchema = new mongoose.Schema(
   {
-    ...userSchema,
+    ...userSchema.obj,
     // name: String,
     // phone: String,
     // email: String,

@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { userSchema } from "./user";
+import { userSchema } from "./user.js";
 
 const specialSchema = new mongoose.Schema(
   {
@@ -7,7 +7,7 @@ const specialSchema = new mongoose.Schema(
     // phone: String,
     // email: String,
     // photo?: String,
-    ...userSchema,
+    ...userSchema.obj,
   },
   {
     timestamps: true,
