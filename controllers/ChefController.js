@@ -105,18 +105,42 @@ export const updateChef = async (req, res) => {
   }
 };
 
+// export const getChefByID = async (req, res) => {
+//   try {
+//     const { chefId, unitId } = req.params;
+
+//     const unit = await Unit.findById(unitId).populate("chef");
+//     if (!unit) return res.status(400).json({ message: "chef not found" });
+
+//     const chef = unit.chef.find((t) => t._id.toString() === chefId);
+//     if (!chef) return res.status(400).json({ message: "Chef not found" });
+//     res.status(200).json(chef);
+//   } catch (error) {
+//     console.log("Error", error.message);
+//     return res.status(500).json({ message: "Internal server error" });
+//   }
+// };
+
 export const getChefByID = async (req, res) => {
   try {
     const { chefId, unitId } = req.params;
 
+    // Hämta enheten baserat på unitId och populate chef
     const unit = await Unit.findById(unitId).populate("chef");
-    if (!unit) return res.status(400).json({ message: "chef not found" });
+    if (!unit) {
+      console.error("Unit not found:", unitId); // Logga om enheten inte hittas
+      return res.status(400).json({ message: "Unit not found" });
+    }
 
-    const chef = unit.chef.find((t) => t._id.toString() === chefId);
-    if (!chef) return res.status(400).json({ message: "Chef not found" });
-    res.status(200).json(chef);
+    const chef = unit.chef; // En chef är direkt ett objekt, inte en array
+    if (!chef || chef._id.toString() !== chefId) {
+      console.error("Chef not found for ID:", chefId); // Logga om chefen inte finns
+      return res.status(400).json({ message: "Chef not found" });
+    }
+
+    res.status(200).json(chef); // Skicka tillbaka chefens data
   } catch (error) {
-    console.log("Error", error.message);
+    console.error("Error in getChefByID:", error.message); // Logga serverfel
     return res.status(500).json({ message: "Internal server error" });
   }
 };

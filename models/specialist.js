@@ -1,14 +1,16 @@
 import mongoose from "mongoose";
+import { userSchema } from "./user";
 
 const specialSchema = new mongoose.Schema(
   {
-    name: String,
-    phone: String,
-    email: String,
+    // name: String,
+    // phone: String,
+    // email: String,
     // photo?: String,
+    ...userSchema,
   },
   {
-    timestamps: { createdAt: "skapats", updatedAt: "Uppdaterats" },
+    timestamps: true,
   }
 );
 

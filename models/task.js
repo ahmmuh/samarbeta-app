@@ -13,7 +13,7 @@ const taskSchema = new mongoose.Schema(
     unit: { type: mongoose.Schema.Types.ObjectId, ref: "Unit" },
   },
   {
-    timestamps: { createdAt: "skapats", updatedAt: "Uppdaterats" },
+    // timestamps: { createdAt: "skapad", updatedAt: "senast ändrad" },
   }
 );
 
