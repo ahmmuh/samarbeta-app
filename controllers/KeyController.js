@@ -1,12 +1,13 @@
-import KeyModel from "../models/key";
-import User from "../models/user";
+import KeyModel from "../models/key.js";
+import KeyLog from "../models/keyLog.js";
+import User from "../models/user.js";
 
 //låna nycklar
 
 export const checkOutKey = async (req, res) => {
   const { keyId, userId, location, label } = req.body;
-  if (!keyId) return res.status(404).json({ message: "Nyckel-ID krävs" });
-  if (!userId) return res.status(404).json({ message: "Användare-ID krävs" });
+  if (!keyId) return res.status(400).json({ message: "Nyckel-ID krävs" });
+  if (!userId) return res.status(400).json({ message: "Användare-ID krävs" });
   try {
     const foundKey = await KeyModel.findOne({ keyId });
     if (!foundKey) {
@@ -24,8 +25,13 @@ export const checkOutKey = async (req, res) => {
     foundKey.status = "checked-out";
     foundKey.borrowedAt = new Date();
     foundKey.borrowedBy = userId;
-
     await foundKey.save();
+
+    await KeyLog.create({
+      key: foundKey._id,
+      user: foundUser._id,
+      action: "checkout",
+    });
     return res
       .status(200)
       .json({ message: "Nyckeln har lånats ut", key: foundKey });
@@ -37,10 +43,10 @@ export const checkOutKey = async (req, res) => {
 
 // Återlämna nycklar
 
-export const checkinKey = async (req, res) => {
+export const checkInKey = async (req, res) => {
   const { keyId, userId } = req.body;
-  if (!keyId) return res.status(404).json({ message: "Nyckel-ID krävs" });
-  if (!userId) return res.status(404).json({ message: "Användare-ID krävs" });
+  if (!keyId) return res.status(400).json({ message: "Nyckel-ID krävs" });
+  if (!userId) return res.status(400).json({ message: "Användare-ID krävs" });
   try {
     const foundKey = await KeyModel.findOne({ keyId });
     if (!foundKey) {
@@ -51,14 +57,22 @@ export const checkinKey = async (req, res) => {
       return res.status(404).json({ message: "Användare finns ej" });
     }
 
-    if (foundKey.status === "checked-out") {
-      // return res.status(400).json({ message: "Nyckeln är inte tillgänglig" });
-      foundKey.status = "returned";
-      foundKey.borrowedBy = null;
-      foundKey.returnedAt = new Date();
-      foundKey.borrowedAt = null;
-      await foundKey.save();
+    if (foundKey.status !== "checked-out") {
+      return res
+        .status(400)
+        .json({ message: "Nyckeln är inte utlånad och kan inte återlämnas" });
     }
+
+    foundKey.status = "returned";
+    foundKey.borrowedBy = null;
+    foundKey.returnedAt = new Date();
+    foundKey.borrowedAt = null;
+    await foundKey.save();
+    await KeyLog.create({
+      key: foundKey._id,
+      user: foundUser._id,
+      action: "checkin",
+    });
 
     return res
       .status(200)
@@ -71,7 +85,7 @@ export const checkinKey = async (req, res) => {
 
 export const getAllkeys = async (req, res) => {
   const { userId } = req.body;
-  if (!userId) return res.status(404).json({ message: "Användare-ID krävs" });
+  if (!userId) return res.status(400).json({ message: "Användare-ID krävs" });
 
   try {
     //hämta user först för att sedan kunna hämta keys by User ID
@@ -92,8 +106,8 @@ export const getAllkeys = async (req, res) => {
 
 export const getKey = async (req, res) => {
   const { keyId, userId } = req.body;
-  if (!keyId) return res.status(404).json({ message: "Nyckel ID krävs" });
-  if (!userId) return res.status(404).json({ message: "Användare ID krävs" });
+  if (!keyId) return res.status(400).json({ message: "Nyckel ID krävs" });
+  if (!userId) return res.status(400).json({ message: "Användare ID krävs" });
 
   try {
     const foundedKey = await KeyModel.findOne({ keyId });
@@ -126,6 +140,10 @@ export const addKey = async (req, res) => {
 
   try {
     const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(400).json({ message: "Användare hittades inte" });
+    }
     const newKey = new KeyModel({ keyId, label, location });
     user.keys.push(newKey._id);
     await newKey.save();
@@ -135,7 +153,12 @@ export const addKey = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       message: "Server error, vid skapandet av nyckel",
-      key: newKey,
     });
   }
+};
+
+//get logs
+
+export const getKeyLogs = async (req, res) => {
+  const { keyId, userId } = req.body;
 };

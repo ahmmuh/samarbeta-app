@@ -1,5 +1,4 @@
 import axios from "axios";
-import { response } from "express";
 
 const GOOGLE_PLACES_API_KEY = "AIzaSyABxgJhxqWUnWriCRrLhbZdKbVZxmUbTao";
 const BASE_URL = "https://maps.googleapis.com/maps/api/place";

@@ -9,6 +9,7 @@ import cors from "cors";
 import taskRoute from "./routes/taskRoute.js";
 import workplaceRoute from "./routes/workplaceRoute.js";
 import googlePlaceRoute from "./routes/googlePlaceRoute.js";
+import keyRoute from "./routes/keyRoute.js";
 const app = express();
 const port = 8000;
 
@@ -27,6 +28,7 @@ app.use("/api", chefRoute);
 app.use("/api", taskRoute);
 app.use("/api", googlePlaceRoute);
 app.use("/api", workplaceRoute);
+app.use("/api", keyRoute);
 // Optional logging middleware (can be uncommented for debugging)
 // app.use((req, res, next) => {
 //   console.log("Incoming request method:", req.method); // Log the HTTP method
