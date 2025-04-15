@@ -16,7 +16,7 @@ chefRoute.get("/units/:unitId/chefer", getAllChefer);
 chefRoute.get("/units/:unitId/chefer/:chefId", getChefByID);
 chefRoute.patch("/units/:unitId/chefer", addChefToUnit);
 //add key to chef
-chefRoute.patch("/units/:unitId/chefer/:chefId/keys/:keyId", addKeyToUser);
+//chefRoute.patch("/units/:unitId/chefer/:chefId/keys/:keyId", addKeyToUser);
 
 chefRoute.put("/units/:unitId/chefer/:chefId", updateChef);
 chefRoute.delete("/units/:unitId/chefer/:chefId", deleteChef);

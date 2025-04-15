@@ -2,6 +2,7 @@ import Chef from "../models/chef.js";
 import KeyModel from "../models/key.js";
 import KeyLog from "../models/keyLog.js";
 import User from "../models/user.js";
+import Specialist from "../models/specialist.js";
 
 //Hämta alla nycklar
 
@@ -193,36 +194,90 @@ export const addNewKey = async (req, res) => {
 
 // add key to user who has borrowed
 
+// export const addKeyToUser = async (req, res) => {
+//   // const { keyLabel, location } = req.body;
+//   const { chefId, keyId } = req.params;
+//   console.log("ChefID", chefId);
+//   console.log("keyId", keyId);
+
+//   try {
+//     if (!chefId) {
+//       return res.status(404).json({ message: "chefId ID krävs" });
+//     }
+
+//     if (!keyId) {
+//       return res.status(404).json({ message: "Nyckel ID krävs" });
+//     }
+//     const chef = await Chef.findById(chefId);
+//     console.log("chef ID", chef);
+//     const key = await KeyModel.findById(keyId);
+//     console.log("KEY ID", key);
+
+//     chef.keys.push(key._id);
+//     console.log("chef MED ALLA KEYS", chef.keys);
+//     // await newKey.save();
+//     // await chef.save();
+
+//     console.log("Key was added to chef", chef);
+//     return res.status(200).json("");
+//   } catch (error) {
+//     return res.status(500).json({
+//       message: "Server error, när man lägga en nyckel till användare",
+//     });
+//   }
+// };
+
+//tst kod för att lägga key till users (chef,specialist) dynamiskt
+
+// Återanvändbar metod för att lägga till nyckel till olika användartyper
 export const addKeyToUser = async (req, res) => {
-  // const { keyLabel, location } = req.body;
-  const { chefId, keyId } = req.params;
-  console.log("ChefID", chefId);
-  console.log("keyId", keyId);
+  const { unitId, userId, keyId, userType } = req.params; // Lägg till userType för att identifiera användartypen
+  console.log("Req.params", req.params);
+  console.log("userType", userType);
+  // Kontrollera om alla parametrar finns
+  if (!unitId || !userId || !keyId || !userType) {
+    return res
+      .status(404)
+      .json({ message: "Användar-ID, Nyckel-ID eller användartyp krävs" });
+  }
 
   try {
-    if (!chefId) {
-      return res.status(404).json({ message: "chefId ID krävs" });
+    // Dynamiskt hitta användaren baserat på userType
+    let user;
+    switch (userType) {
+      case "chefer":
+        user = await Chef.findById(userId);
+        break;
+      case "specialister":
+        user = await Specialist.findById(userId);
+        break;
+
+      default:
+        return res.status(404).json({ message: "Ogiltig användartyp" });
     }
 
-    if (!keyId) {
-      return res.status(404).json({ message: "Nyckel ID krävs" });
+    if (!user) {
+      return res.status(404).json({ message: "Användare inte funnen" });
     }
-    const chef = await Chef.findById(chefId);
-    console.log("chef ID", chef);
+
     const key = await KeyModel.findById(keyId);
-    console.log("KEY ID", key);
+    if (!key) {
+      return res.status(404).json({ message: "Nyckel inte funnen" });
+    }
 
-    chef.keys.push(key._id);
-    console.log("chef MED ALLA KEYS", chef.keys);
-    // await newKey.save();
-    // await chef.save();
+    // Lägg till nyckeln i användarens lista
+    user.keys.push(key._id);
+    await user.save();
 
-    console.log("Key was added to chef", chef);
-    return res.status(200).json("");
-  } catch (error) {
-    return res.status(500).json({
-      message: "Server error, när man lägga en nyckel till användare",
+    return res.status(200).json({
+      message: `Nyckeln har lagts till ${userType.slice(0, -1)}n`,
+      user,
     });
+  } catch (error) {
+    console.error("Fel vid tilldelning av nyckel till användare", error);
+    return res
+      .status(500)
+      .json({ message: "Serverfel vid tilldelning av nyckel" });
   }
 };
 

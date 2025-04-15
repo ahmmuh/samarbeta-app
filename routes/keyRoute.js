@@ -15,6 +15,6 @@ keyRoute.get("/keys", getAllKeys);
 keyRoute.patch("/keys/checkout", checkOutKey);
 keyRoute.patch("/keys/checkin", checkInKey);
 
-keyRoute.patch("/units/:unitId/users/:userId/keys/:keyId", addKeyToUser);
+keyRoute.patch("/units/:unitId/:userType/:userId/keys/:keyId", addKeyToUser);
 
 export default keyRoute;
