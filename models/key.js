@@ -2,7 +2,8 @@ import mongoose from "mongoose";
 
 const keySchema = new mongoose.Schema(
   {
-    keyId: { type: String, unique: true, required: true },
+    keyLabel: { type: String, unique: true, required: true },
+    location: String, // var den normalt förvaras
 
     status: {
       type: String,
@@ -18,9 +19,6 @@ const keySchema = new mongoose.Schema(
 
     borrowedAt: { type: Date, default: null },
     returnedAt: { type: Date, default: null },
-
-    label: String, // valfri visuell etikett
-    location: String, // var den normalt förvaras
   },
   { timestamps: true }
 );

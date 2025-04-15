@@ -1,6 +1,27 @@
+import Chef from "../models/chef.js";
 import KeyModel from "../models/key.js";
 import KeyLog from "../models/keyLog.js";
 import User from "../models/user.js";
+
+//Hämta alla nycklar
+
+export const getAllKeys = async (req, res) => {
+  try {
+    const keys = await KeyModel.find();
+    if (keys.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "Det finns inga nycklar att hämta" });
+    }
+
+    return res.status(200).json(keys);
+  } catch (error) {
+    console.error("Error vid hämtning alla nycklar utan användare");
+    return res
+      .status(500)
+      .json({ message: "Serverfel vid hämtning av alla nycklar" });
+  }
+};
 
 //låna nycklar
 
@@ -9,7 +30,7 @@ export const checkOutKey = async (req, res) => {
   if (!keyId) return res.status(400).json({ message: "Nyckel-ID krävs" });
   if (!userId) return res.status(400).json({ message: "Användare-ID krävs" });
   try {
-    const foundKey = await KeyModel.findOne({ keyId });
+    const foundKey = await KeyModel.findOne({ _id: keyId });
     if (!foundKey) {
       return res.status(404).json({ message: "Nyckeln finns ej" });
     }
@@ -48,7 +69,7 @@ export const checkInKey = async (req, res) => {
   if (!keyId) return res.status(400).json({ message: "Nyckel-ID krävs" });
   if (!userId) return res.status(400).json({ message: "Användare-ID krävs" });
   try {
-    const foundKey = await KeyModel.findOne({ keyId });
+    const foundKey = await KeyModel.findOne({ _id: keyId });
     if (!foundKey) {
       return res.status(404).json({ message: "Nyckeln finns ej" });
     }
@@ -74,16 +95,18 @@ export const checkInKey = async (req, res) => {
       action: "checkin",
     });
 
-    return res
-      .status(200)
-      .json({ message: "Nyckeln har återlämnats", key: foundKey });
+    return res.status(200).json({
+      message: "Nyckeln har återlämnats",
+      användare: foundUser,
+      key: foundKey,
+    });
   } catch (error) {
     console.error("Error vi inlämning av nyckel");
     return res.status(500).json({ message: "Error vi inlämning av nyckel" });
   }
 };
 
-export const getAllkeys = async (req, res) => {
+export const getKeyFromUser = async (req, res) => {
   const { userId } = req.body;
   if (!userId) return res.status(400).json({ message: "Användare-ID krävs" });
 
@@ -102,7 +125,7 @@ export const getAllkeys = async (req, res) => {
   }
 };
 
-// inte färdig kodat
+// inte färdig kodat - hämta nycklar hos användare
 
 export const getKey = async (req, res) => {
   const { keyId, userId } = req.body;
@@ -132,28 +155,106 @@ export const getKey = async (req, res) => {
   }
 };
 
-// add ny nyckel
+//Lägga till bara nycklar, ingen användare
 
-export const addKey = async (req, res) => {
-  const { userId, keyId, label, location } = req.body;
-  if (!userId) return res.status(404).json({ message: "Användare ID krävs" });
+export const addNewKey = async (req, res) => {
+  const { keyLabel, location } = req.body;
+  // console.log("Inkommande data:", req.body);
 
   try {
-    const user = await User.findById(userId);
+    // Om nyckel finns redan i systemet
+    const existKey = await KeyModel.findOne({ keyLabel });
 
-    if (!user) {
-      return res.status(400).json({ message: "Användare hittades inte" });
+    if (existKey) {
+      return res
+        .status(400)
+        .json({ message: "Nyckel med denna label finns redan" });
     }
-    const newKey = new KeyModel({ keyId, label, location });
-    user.keys.push(newKey._id);
-    await newKey.save();
-    await user.save();
 
-    return res.status(200).json(newKey);
+    //skapa en ny nyckel
+
+    if (!keyLabel || !location) {
+      return res
+        .status(400)
+        .json({ message: "keyLabel eller location saknas" });
+    }
+    const newKey = new KeyModel({ keyLabel, location });
+
+    await newKey.save();
+    console.log("NEW Key", newKey);
+    return res.status(201).json({ message: "En ny nyckel har lagts", newKey });
+  } catch (error) {
+    console.error("Error vid skapande av ny nyckel", error);
+    return res.status(500).json({
+      message: "Server fel när användare försökt lägga till en ny nyckeö",
+    });
+  }
+};
+
+// add key to user who has borrowed
+
+export const addKeyToUser = async (req, res) => {
+  // const { keyLabel, location } = req.body;
+  const { chefId, keyId } = req.params;
+  console.log("ChefID", chefId);
+  console.log("keyId", keyId);
+
+  try {
+    if (!chefId) {
+      return res.status(404).json({ message: "chefId ID krävs" });
+    }
+
+    if (!keyId) {
+      return res.status(404).json({ message: "Nyckel ID krävs" });
+    }
+    const chef = await Chef.findById(chefId);
+    console.log("chef ID", chef);
+    const key = await KeyModel.findById(keyId);
+    console.log("KEY ID", key);
+
+    chef.keys.push(key._id);
+    console.log("chef MED ALLA KEYS", chef.keys);
+    // await newKey.save();
+    // await chef.save();
+
+    console.log("Key was added to chef", chef);
+    return res.status(200).json("");
   } catch (error) {
     return res.status(500).json({
-      message: "Server error, vid skapandet av nyckel",
+      message: "Server error, när man lägga en nyckel till användare",
     });
+  }
+};
+
+//Update key
+export const updateKey = async (req, res) => {
+  const { keyId } = req.params;
+  console.log("keyId ", keyId);
+  try {
+    const foundedKy = await KeyModel.findById(keyId);
+    if (!foundedKy)
+      return res.status(400).json({ message: "Nyckeln hittades inte!" });
+
+    const updatedKey = await KeyModel.findByIdAndUpdate(keyId, req.body, {
+      new: true,
+    });
+    res
+      .status(200)
+      .json({ message: "updatedKey uppdaterades", updatedKey: updatedKey });
+  } catch (error) {
+    console.log("Error", error.message);
+    res.status(500).json({ message: "Internal Error", error });
+  }
+};
+export const deleteKey = async (req, res) => {
+  const { keyId } = req.params;
+  try {
+    const deletedKey = await Unit.findByIdAndDelete(keyId, { new: true });
+    res
+      .status(200)
+      .json({ message: "Nyckel med ID " + keyId + " has been deleted" });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", error });
   }
 };
 

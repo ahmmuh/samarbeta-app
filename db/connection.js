@@ -11,6 +11,7 @@ const getConnection = () => {
     .catch((err) => {
       console.log(`Connection Error ${err}`);
     });
+
   return db;
 };
 
