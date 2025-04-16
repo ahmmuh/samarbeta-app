@@ -24,42 +24,68 @@ export const getAllKeys = async (req, res) => {
   }
 };
 
-//låna nycklar
+export const checkOutKeyAndAssignToUser = async (req, res) => {
+  const { keyId, userId, userType } = req.params;
 
-export const checkOutKey = async (req, res) => {
-  const { keyId, userId, location, label } = req.body;
-  if (!keyId) return res.status(400).json({ message: "Nyckel-ID krävs" });
-  if (!userId) return res.status(400).json({ message: "Användare-ID krävs" });
+  if (!keyId || !userId || !userType) {
+    return res
+      .status(400)
+      .json({ message: "keyId, userId och userType krävs" });
+  }
+
   try {
-    const foundKey = await KeyModel.findOne({ _id: keyId });
-    if (!foundKey) {
-      return res.status(404).json({ message: "Nyckeln finns ej" });
-    }
-    const foundUser = await User.findById(userId);
-    if (!foundUser) {
-      return res.status(404).json({ message: "Användare finns ej" });
-    }
+    // Hämta nyckeln
+    const key = await KeyModel.findById(keyId);
+    if (!key) return res.status(404).json({ message: "Nyckeln finns ej" });
 
-    if (foundKey.status !== "available") {
+    if (key.status !== "available") {
       return res.status(400).json({ message: "Nyckeln är inte tillgänglig" });
     }
 
-    foundKey.status = "checked-out";
-    foundKey.borrowedAt = new Date();
-    foundKey.borrowedBy = userId;
-    await foundKey.save();
+    // Dynamisk användare beroende på typ
+    let user;
+    switch (userType) {
+      case "chefer":
+        user = await Chef.findById(userId);
+        break;
+      case "specialister":
+        user = await Specialist.findById(userId);
+        break;
+      default:
+        return res.status(400).json({ message: "Ogiltig användartyp" });
+    }
 
+    if (!user) return res.status(404).json({ message: "Användare finns ej" });
+
+    // Uppdatera nyckelns status
+    key.status = "checked-out";
+    key.borrowedAt = new Date();
+    key.borrowedBy = user._id;
+    await key.save();
+    console.log("Key som ska lånas ut, innan den sparas i databasen", key);
+
+    // Lägg till nyckeln i användarens lista om den inte redan finns
+    if (!user.keys.includes(key._id)) {
+      user.keys.push(key._id);
+      await user.save();
+    }
+    console.log("Användare som ska låna nyckeln", user);
+
+    // Logga händelsen
     await KeyLog.create({
-      key: foundKey._id,
-      user: foundUser._id,
+      key: key._id,
+      user: user._id,
       action: "checkout",
     });
-    return res
-      .status(200)
-      .json({ message: "Nyckeln har lånats ut", key: foundKey });
+
+    return res.status(200).json({
+      message: `Nyckeln har lånats ut till ${userType.slice(0, -1)}`,
+      user,
+      key,
+    });
   } catch (error) {
-    console.error("Server error vid ulämning av nyckel", error);
-    return res.status(500).json({ message: "Error vi utlämning av nyckel" });
+    console.error("Fel vid utlåning och tilldelning av nyckel:", error);
+    return res.status(500).json({ message: "Serverfel vid nyckelutlåning" });
   }
 };
 
@@ -227,7 +253,7 @@ export const addNewKey = async (req, res) => {
 //   }
 // };
 
-//tst kod för att lägga key till users (chef,specialist) dynamiskt
+//test kod för att lägga key till users (chef,specialist) dynamiskt
 
 // Återanvändbar metod för att lägga till nyckel till olika användartyper
 export const addKeyToUser = async (req, res) => {
