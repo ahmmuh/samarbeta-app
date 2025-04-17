@@ -13,8 +13,15 @@ const keySchema = new mongoose.Schema(
 
     borrowedBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      refPath: "borrowedByModel",
       default: null,
+    },
+    borrowedByModel: {
+      type: String,
+      required: function () {
+        return this.borrowedBy != null; // borrowedByModel krävs om borrowedBy finns
+      },
+      enum: ["Chef", "Specialist"],
     },
 
     borrowedAt: { type: Date, default: null },
@@ -23,5 +30,6 @@ const keySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const KeyModel = mongoose.model("KeyModel", keySchema);
+const KeyModel =
+  mongoose.models.KeyModel || mongoose.model("KeyModel", keySchema);
 export default KeyModel;

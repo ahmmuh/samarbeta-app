@@ -3,12 +3,14 @@ import KeyModel from "../models/key.js";
 import KeyLog from "../models/keyLog.js";
 import User from "../models/user.js";
 import Specialist from "../models/specialist.js";
+import mongoose from "mongoose";
 
 //Hämta alla nycklar
 
 export const getAllKeys = async (req, res) => {
   try {
-    const keys = await KeyModel.find();
+    // console.log("Alla modells", mongoose.models);
+    const keys = await KeyModel.find().populate("borrowedBy");
     if (keys.length === 0) {
       return res
         .status(400)
@@ -23,7 +25,63 @@ export const getAllKeys = async (req, res) => {
       .json({ message: "Serverfel vid hämtning av alla nycklar" });
   }
 };
+//show user who borrows a key
+export const displayBorrowedByUser = async (req, res) => {
+  const { userId, keyId } = req.params;
 
+  if (!userId)
+    return res.status(400).json({ message: "ID for User finns inte" });
+  console.log("Borrowed USER ID: ", userId);
+  if (!keyId) return res.status(400).json({ message: "ID for KEY finns inte" });
+  console.log("KEY ID: ", keyId);
+
+  try {
+    const key = await KeyModel.findById(keyId);
+    if (!key) {
+      return res.status(400).json({ message: "Denna key finns ej" });
+    }
+
+    console.log("Hämtad key INFO", key);
+
+    let borrower;
+
+    // if (
+    //   typeof borrower === "string" ||
+    //   borrower instanceof mongoose.Types.ObjectId
+    // ) {
+    //   borrower = await User.findById(borrower);
+    //   console.log("Hämtad borrower från User.findById:", borrower);
+    // }
+
+    if (key.borrowedByModel === "Chef") {
+      borrower = await Chef.findById(key.borrowedBy);
+    } else if (key.borrowedByModel === "Specialist") {
+      borrower = await Specialist.findById(key.borrowedBy);
+    } else {
+      return res.status(400).json({ message: "Ogiltig modell för låntagare" });
+    }
+    if (!borrower) {
+      return res
+        .status(400)
+        .json({ message: "Kan inte hitta låntagaren i databasen" });
+    }
+
+    console.log("Hämtad borrower efter findById() metod:", borrower);
+    if (borrower._id.toString() !== userId) {
+      return res
+        .status(400)
+        .json({ message: "Den här användare har inte lånat denna nyckel" });
+    }
+
+    console.log("Lånetagre info", borrower);
+    res.status(200).json({ borrowedByUser: borrower });
+  } catch (error) {
+    console.error("Error vid hämtning av borrowedUser", error.message);
+    return res
+      .status(500)
+      .json({ message: "Serverfel vid hämtning av borrowedUser" });
+  }
+};
 export const checkOutKeyAndAssignToUser = async (req, res) => {
   const { keyId, userId, userType } = req.params;
 
@@ -55,10 +113,15 @@ export const checkOutKeyAndAssignToUser = async (req, res) => {
         return res.status(400).json({ message: "Ogiltig användartyp" });
     }
 
-    if (!user) return res.status(404).json({ message: "Användare finns ej" });
+    if (!user) {
+      return res.status(404).json({ message: "Användare finns ej" });
+    }
 
     // Uppdatera nyckelns status
     key.status = "checked-out";
+    const modelType =
+      userType.toLowerCase() === "chefer" ? "Chef" : "Specialist";
+    key.borrowedByModel = modelType;
     key.borrowedAt = new Date();
     key.borrowedBy = user._id;
     await key.save();
@@ -92,7 +155,7 @@ export const checkOutKeyAndAssignToUser = async (req, res) => {
 // Återlämna nycklar
 
 export const checkInKey = async (req, res) => {
-  const { keyId, userId } = req.body;
+  const { keyId, userId } = req.params;
   if (!keyId) return res.status(400).json({ message: "Nyckel-ID krävs" });
   if (!userId) return res.status(400).json({ message: "Användare-ID krävs" });
   try {
@@ -205,7 +268,10 @@ export const addNewKey = async (req, res) => {
         .status(400)
         .json({ message: "keyLabel eller location saknas" });
     }
-    const newKey = new KeyModel({ keyLabel, location });
+    const newKey = new KeyModel();
+    if (newKey.borrowedByModel === "Chef") {
+      // newKey = await
+    }
 
     await newKey.save();
     console.log("NEW Key", newKey);
