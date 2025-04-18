@@ -253,30 +253,55 @@ export const getKeyFromUser = async (req, res) => {
 // inte färdig kodat - hämta nycklar hos användare
 
 export const getKey = async (req, res) => {
-  const { keyId, userId } = req.body;
+  const { keyId, userId, userType } = req.params;
   if (!keyId) return res.status(400).json({ message: "Nyckel ID krävs" });
-  if (!userId) return res.status(400).json({ message: "Användare ID krävs" });
+  // if (!userId) return res.status(400).json({ message: "Användare ID krävs" });
+  console.log(`Key ID: ${keyId}`);
 
   try {
-    const foundedKey = await KeyModel.findOne({ keyId });
+    const foundedKey = await KeyModel.findById(keyId);
     if (!foundedKey) {
       return res.status(400).json({ message: "Nyckeln finns ej" });
     }
-    const foundedUser = await User.findById(userId);
-    if (!foundedUser) {
-      return res.status(400).json({ message: "Användare finns ej" });
-    }
 
-    if (!foundedUser.keys.includes(foundedKey._od)) {
-      return res
-        .status(400)
-        .json({ message: "Användaren har inte denna nyckel" });
-    }
+    // let foundUser;
+    // const type = userType.toLowerCase();
+
+    // switch (type) {
+    //   case "chefer":
+    //     foundUser = await Chef.findById(userId);
+    //     break;
+    //   case "specialister":
+    //     foundUser = await Specialist.findById(userId);
+    //     break;
+    //   default:
+    //     return res
+    //       .status(400)
+    //       .json({ message: `Ogiltig användartyp: ${userType}` });
+    // }
+
+    // console.log(
+    //   "Founded User i getKey() function innan if statement and after swtich ",
+    //   foundUser
+    // );
+
+    // if (!foundUser) {
+    //   return res.status(404).json({ message: "Användare finns ej" });
+    // }
+
+    // if (!foundUser.keys.includes(foundedKey._id)) {
+    //   return res
+    //     .status(400)
+    //     .json({ message: "Användaren har inte denna nyckel" });
+    // }
+
+    // console.log("Founded User i getKey() function ", foundUser);
+    console.log("Founded key i getKey() function", foundedKey);
     return res.status(200).json(foundedKey);
   } catch (error) {
     return res
       .status(500)
-      .json({ message: "Server error, vid hämtning av nyckel", key: foundKey });
+      .json({ message: "Server error, vid hämtning av nyckel" });
   }
 };
 
@@ -431,10 +456,10 @@ export const updateKey = async (req, res) => {
 export const deleteKey = async (req, res) => {
   const { keyId } = req.params;
   try {
-    const deletedKey = await Unit.findByIdAndDelete(keyId, { new: true });
-    res
-      .status(200)
-      .json({ message: "Nyckel med ID " + keyId + " has been deleted" });
+    const deletedKey = await KeyModel.findByIdAndDelete(keyId, { new: true });
+    return res.status(200).json({
+      message: "Nyckel med ID " + deletedKey._id + " has been deleted",
+    });
   } catch (error) {
     res.status(500).json({ message: "Internal server error", error });
   }
