@@ -155,15 +155,36 @@ export const checkOutKeyAndAssignToUser = async (req, res) => {
 // Återlämna nycklar
 
 export const checkInKey = async (req, res) => {
-  const { keyId, userId } = req.params;
-  if (!keyId) return res.status(400).json({ message: "Nyckel-ID krävs" });
-  if (!userId) return res.status(400).json({ message: "Användare-ID krävs" });
+  const { keyId, userId, userType } = req.params;
+
+  if (!keyId || !userId || !userType) {
+    return res
+      .status(400)
+      .json({ message: "Det krävs keyId, userId och userType" });
+  }
+
   try {
-    const foundKey = await KeyModel.findOne({ _id: keyId });
+    const foundKey = await KeyModel.findById(keyId);
     if (!foundKey) {
       return res.status(404).json({ message: "Nyckeln finns ej" });
     }
-    const foundUser = await User.findById(userId);
+
+    let foundUser;
+    const type = userType.toLowerCase();
+
+    switch (type) {
+      case "chefer":
+        foundUser = await Chef.findById(userId);
+        break;
+      case "specialister":
+        foundUser = await Specialist.findById(userId);
+        break;
+      default:
+        return res
+          .status(400)
+          .json({ message: `Ogiltig användartyp: ${userType}` });
+    }
+
     if (!foundUser) {
       return res.status(404).json({ message: "Användare finns ej" });
     }
@@ -174,11 +195,22 @@ export const checkInKey = async (req, res) => {
         .json({ message: "Nyckeln är inte utlånad och kan inte återlämnas" });
     }
 
+    // Kontrollera att det faktiskt är rätt användare som lämnar tillbaka
+    if (!foundKey.borrowedBy || foundKey.borrowedBy.toString() !== userId) {
+      return res
+        .status(400)
+        .json({ message: "Denna användare har inte lånat denna nyckel" });
+    }
+
+    // Uppdatera nyckelns status
     foundKey.status = "returned";
     foundKey.borrowedBy = null;
-    foundKey.returnedAt = new Date();
+    foundKey.borrowedByModel = null;
     foundKey.borrowedAt = null;
+    foundKey.returnedAt = new Date();
     await foundKey.save();
+
+    // Logga händelsen
     await KeyLog.create({
       key: foundKey._id,
       user: foundUser._id,
@@ -191,11 +223,14 @@ export const checkInKey = async (req, res) => {
       key: foundKey,
     });
   } catch (error) {
-    console.error("Error vi inlämning av nyckel");
-    return res.status(500).json({ message: "Error vi inlämning av nyckel" });
+    console.error("Error vid inlämning av nyckel:", error.message);
+    return res
+      .status(500)
+      .json({ message: "Serverfel vid inlämning av nyckel" });
   }
 };
 
+//hämta nyckel från användare (ej färdig kodat)
 export const getKeyFromUser = async (req, res) => {
   const { userId } = req.body;
   if (!userId) return res.status(400).json({ message: "Användare-ID krävs" });
