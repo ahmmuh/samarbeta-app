@@ -20,5 +20,6 @@ chefRoute.patch("/units/:unitId/chefer", addChefToUnit);
 
 chefRoute.put("/units/:unitId/chefer/:chefId", updateChef);
 chefRoute.delete("/units/:unitId/chefer/:chefId", deleteChef);
+chefRoute.get("/chefer", getAllCheferWithoutUnit);
 
 export default chefRoute;

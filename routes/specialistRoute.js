@@ -3,6 +3,7 @@ import {
   addSpecialistToUnit,
   deleteSpecialist,
   getAllSpecialister,
+  getAllSpecialistWithoutUnit,
   getSpecialist,
   updateSpecialist,
 } from "../controllers/SpecialistController.js";
@@ -11,6 +12,7 @@ import {
 const specialistRoute = express.Router();
 
 specialistRoute.put("/units/:unitId/specialister", addSpecialistToUnit);
+specialistRoute.get("/specialister", getAllSpecialistWithoutUnit);
 
 specialistRoute.put(
   "/units/:unitId/specialister/:specialistId",

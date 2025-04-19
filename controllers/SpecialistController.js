@@ -146,3 +146,23 @@ export const deleteSpecialist = async (req, res) => {
     return res.status(500).json({ message: "Internal server error", error });
   }
 };
+
+//Fetch alla specialister utan unit
+
+export const getAllSpecialistWithoutUnit = async (req, res) => {
+  try {
+    const specialister = await Specialist.find();
+    if (specialister.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "Det finns inga specialister att hämta" });
+    }
+    console.log("Hämtade specialister i backend", specialister);
+    return res.status(200).json(specialister);
+  } catch (error) {
+    console.error("Error vid hämtning av specialister", error.message);
+    return res
+      .status(500)
+      .json({ message: "Serverfel vid hämtning av specialister" });
+  }
+};

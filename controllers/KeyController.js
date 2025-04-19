@@ -96,13 +96,13 @@ export const checkOutKeyAndAssignToUser = async (req, res) => {
     const key = await KeyModel.findById(keyId);
     if (!key) return res.status(404).json({ message: "Nyckeln finns ej" });
 
-    if (key.status !== "available") {
+    if (key.status !== "available" && key.status !== "returned") {
       return res.status(400).json({ message: "Nyckeln är inte tillgänglig" });
     }
 
     // Dynamisk användare beroende på typ
     let user;
-    switch (userType) {
+    switch (userType.toLowerCase()) {
       case "chefer":
         user = await Chef.findById(userId);
         break;
@@ -170,9 +170,8 @@ export const checkInKey = async (req, res) => {
     }
 
     let foundUser;
-    const type = userType.toLowerCase();
 
-    switch (type) {
+    switch (userType.toLowerCase()) {
       case "chefer":
         foundUser = await Chef.findById(userId);
         break;
@@ -204,8 +203,10 @@ export const checkInKey = async (req, res) => {
 
     // Uppdatera nyckelns status
     foundKey.status = "returned";
+    const modelType =
+      userType.toLowerCase() === "chefer" ? "Chef" : "Specialist";
     foundKey.borrowedBy = null;
-    foundKey.borrowedByModel = null;
+    foundKey.borrowedByModel = modelType;
     foundKey.borrowedAt = null;
     foundKey.returnedAt = new Date();
     await foundKey.save();

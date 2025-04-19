@@ -46,8 +46,13 @@ export const getAllCheferWithoutUnit = async (req, res) => {
       return res.status(404).json({ message: "Det finns ingen chef i listan" });
     }
 
-    return res.status(200).json({ message: chefer });
-  } catch (error) {}
+    return res.status(200).json(chefer);
+  } catch (error) {
+    console.error("Serverfel vid hämtning alla chefer utan enhet");
+    return res
+      .status(500)
+      .json({ message: "Serverfel vid hämtning alla chefer utan enhet" });
+  }
 };
 
 export const getAllChefer = async (req, res) => {
