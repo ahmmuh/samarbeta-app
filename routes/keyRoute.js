@@ -16,5 +16,4 @@ keyRoute.get("/keys/:keyId", getKey);
 
 keyRoute.patch("/keys/:keyId", updateKey);
 keyRoute.delete("/keys/:keyId", deleteKey);
-
 export default keyRoute;

@@ -21,7 +21,11 @@ import { Unit } from "../models/unit.js";
 
 export const getAllUnits = async (req, res) => {
   try {
-    const units = await Unit.find();
+    const units = await Unit.find()
+      .populate("tasks")
+      .populate("specialister")
+      .populate("chef")
+      .populate("workPlaces");
     res.json(units);
   } catch (error) {
     res.status(500).json({ Message: "Internal Server Error" });
@@ -33,7 +37,7 @@ export const getUnitByID = async (req, res) => {
     const { unitId } = req.params;
     const unit = await Unit.findById(unitId)
       .populate("tasks")
-      .populate("specialister") 
+      .populate("specialister")
       .populate("chef")
       .populate("workPlaces");
 

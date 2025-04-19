@@ -11,6 +11,7 @@ import workplaceRoute from "./routes/workplaceRoute.js";
 import googlePlaceRoute from "./routes/googlePlaceRoute.js";
 import keyRoute from "./routes/keyRoute.js";
 import userRouter from "./routes/userRoute.js";
+import keyLogRoute from "./routes/keyLogsRoute.js";
 const app = express();
 const port = 8000;
 
@@ -30,6 +31,7 @@ app.use("/api", taskRoute);
 app.use("/api", googlePlaceRoute);
 app.use("/api", workplaceRoute);
 app.use("/api", keyRoute);
+app.use("/api", keyLogRoute);
 
 app.use("/api", userRouter);
 // Optional logging middleware (can be uncommented for debugging)
