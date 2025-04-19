@@ -206,7 +206,9 @@ export const checkInKey = async (req, res) => {
     const modelType =
       userType.toLowerCase() === "chefer" ? "Chef" : "Specialist";
     foundKey.borrowedBy = null;
-    foundKey.borrowedByModel = modelType;
+    foundKey.borrowedByModel = null;
+    foundKey.lastBorrowedBy = foundUser._id;
+    foundKey.lastBorrowedByModel = modelType;
     foundKey.borrowedAt = null;
     foundKey.returnedAt = new Date();
     await foundKey.save();

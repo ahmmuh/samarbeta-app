@@ -16,6 +16,11 @@ const keySchema = new mongoose.Schema(
       refPath: "borrowedByModel",
       default: null,
     },
+    lastBorrowedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      refPath: "borrowedByModel",
+    },
+    lastBorrowedByModel: { type: String, enum: ["Chef", "Specialist"] },
     borrowedByModel: {
       type: String,
       required: function () {
