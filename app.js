@@ -12,6 +12,7 @@ import googlePlaceRoute from "./routes/googlePlaceRoute.js";
 import keyRoute from "./routes/keyRoute.js";
 import userRouter from "./routes/userRoute.js";
 import keyLogRoute from "./routes/keyLogsRoute.js";
+import apartmentRoute from "./routes/apartmentRoute.js";
 const app = express();
 const port = 8000;
 
@@ -32,7 +33,7 @@ app.use("/api", googlePlaceRoute);
 app.use("/api", workplaceRoute);
 app.use("/api", keyRoute);
 app.use("/api", keyLogRoute);
-
+app.use("/api", apartmentRoute);
 app.use("/api", userRouter);
 // Optional logging middleware (can be uncommented for debugging)
 // app.use((req, res, next) => {

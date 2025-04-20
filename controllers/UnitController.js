@@ -25,7 +25,9 @@ export const getAllUnits = async (req, res) => {
       .populate("tasks")
       .populate("specialister")
       .populate("chef")
-      .populate("workPlaces");
+      .populate("workPlaces")
+      .populate("apartments");
+
     res.json(units);
   } catch (error) {
     res.status(500).json({ Message: "Internal Server Error" });
