@@ -1,8 +1,10 @@
 import Apartment from "../models/apartment.js";
+import Settings from "../models/settings.js";
+import { Unit } from "../models/unit.js";
 
 export const getAllApartments = async (req, res) => {
   try {
-    const apartments = await Apartment.find();
+    const apartments = await Apartment.find().populate("assignedUnit");
     res.json(apartments);
   } catch (error) {
     res.status(500).json({ Message: "Internal Server Error" });
@@ -28,19 +30,35 @@ export const createApartment = async (req, res) => {
   console.log("Hela Begäran: ", req.body);
   const { apartmentLocation, description, keyLocation } = req.body;
   try {
-    const newApartment = new Apartment({
+    const units = await Unit.find().sort({ createdAt: 1 });
+    if (units.length === 0) {
+      return res.status(400).json({ message: "Det finns inga enheter" });
+    }
+
+    let settings = await Settings.findOne();
+    if (!settings) {
+      settings = await Settings.create({});
+    }
+    let nextIndex = (settings.lastAssignedUnitIndex + 1) % units.length;
+
+    const assignedUnit = units[nextIndex];
+
+    const newApartment = await Apartment.create({
       apartmentLocation,
       description,
       keyLocation,
+      assignedUnit: assignedUnit._id,
+      assignedAt: new Date(),
     });
-    newApartment.priority = "Hög";
-    newApartment.startDate = new Date();
-    newApartment.assignedUnit = "6739998297a4cb689a4a83b2";
-    await newApartment.save();
+    assignedUnit.apartments.push(newApartment._id);
+
+    await assignedUnit.save();
+    settings.lastAssignedUnitIndex = nextIndex;
+    await settings.save();
     console.log("New Apartment:", newApartment);
     res.status(201).json(newApartment);
   } catch (error) {
-    res.status(500).json({ Message: "Internal Server Error" });
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
