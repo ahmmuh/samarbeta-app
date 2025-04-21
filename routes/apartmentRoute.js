@@ -13,6 +13,6 @@ apartmentRoute.get("/apartments", getAllApartments);
 apartmentRoute.get("/apartments/:apartmentId", getApartmentByID);
 apartmentRoute.patch("/apartments/:apartmentId", updateApartment);
 apartmentRoute.delete("/apartments/:apartmentId", deleteApartment);
+apartmentRoute.post("/apartments", createApartment);
 
-apartmentRoute.post("/apartments/create", createApartment);
 export default apartmentRoute;

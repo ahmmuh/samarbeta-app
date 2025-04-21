@@ -18,7 +18,6 @@ const apartmentSchema = new mongoose.Schema(
     },
     startDate: { type: Date, default: null }, // Planerad start
     endDate: { type: Date, default: null }, // Planerat slut
-    completedAt: { type: Date, default: null }, // Verkligt slut
 
     assignedUnit: {
       type: mongoose.Schema.Types.ObjectId,

@@ -28,7 +28,14 @@ export const getApartmentByID = async (req, res) => {
 
 export const createApartment = async (req, res) => {
   console.log("Hela Begäran: ", req.body);
-  const { apartmentLocation, description, keyLocation } = req.body;
+  const {
+    apartmentLocation,
+    description,
+    keyLocation,
+    startDate,
+    endDate,
+    priority,
+  } = req.body;
   try {
     const units = await Unit.find().sort({ createdAt: 1 });
     if (units.length === 0) {
@@ -47,6 +54,9 @@ export const createApartment = async (req, res) => {
       apartmentLocation,
       description,
       keyLocation,
+      startDate,
+      endDate,
+      priority,
       assignedUnit: assignedUnit._id,
       assignedAt: new Date(),
     });
