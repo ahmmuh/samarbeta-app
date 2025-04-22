@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const KeyLogSchema = new mongoose.Schema(
   {
-    key: { type: mongoose.Schema.Types.ObjectId, ref: "Key" },
+    key: { type: mongoose.Schema.Types.ObjectId, ref: "KeyModel" },
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     action: { type: String, enum: ["checkout", "checkin"], required: true },
     timestamp: { type: Date, default: Date.now },
