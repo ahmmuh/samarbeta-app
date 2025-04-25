@@ -119,9 +119,9 @@ export const checkOutKeyAndAssignToUser = async (req, res) => {
 
     // Uppdatera nyckelns status
     key.status = "checked-out";
-    const modelType =
-      userType.toLowerCase() === "chefer" ? "Chef" : "Specialist";
-    key.borrowedByModel = modelType;
+    // const modelType =
+    //   userType.toLowerCase() === "chefer" ? "Chef" : "Specialist";
+    // key.borrowedByModel = modelType;
     key.borrowedAt = new Date();
     key.borrowedBy = user._id;
     await key.save();
@@ -203,12 +203,12 @@ export const checkInKey = async (req, res) => {
 
     // Uppdatera nyckelns status
     foundKey.status = "returned";
-    const modelType =
-      userType.toLowerCase() === "chefer" ? "Chef" : "Specialist";
+    // const modelType =
+    //   userType.toLowerCase() === "chefer" ? "Chef" : "Specialist";
     foundKey.borrowedBy = null;
     foundKey.borrowedByModel = null;
     foundKey.lastBorrowedBy = foundUser._id;
-    foundKey.lastBorrowedByModel = modelType;
+    // foundKey.lastBorrowedByModel = modelType;
     foundKey.borrowedAt = null;
     foundKey.returnedAt = new Date();
     await foundKey.save();

@@ -6,6 +6,11 @@ export const userSchema = new mongoose.Schema(
     phone: String,
     email: String,
     keys: [{ type: mongoose.Schema.Types.ObjectId, ref: "KeyModel" }],
+    userType: {
+      type: String,
+      enum: ["chefer", "specialister"],
+      required: true,
+    },
   },
 
   { timestamps: true }

@@ -26,7 +26,10 @@ export const addSpecialistToUnit = async (req, res) => {
     if (!unit)
       return res.status(400).json({ message: "Enheten hittades inte" });
 
-    const specialist = new Specialist({ name, phone, email });
+    const specialist = new Specialist({
+      ...req.body,
+      userType: "specialister",
+    });
     await specialist.save();
     unit.specialister.push(specialist._id);
     console.log("Specialist ID i addSpecialistToUnit", specialist._id);

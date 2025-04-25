@@ -19,7 +19,10 @@ export const addChefToUnit = async (req, res) => {
     if (!name || !phone || !email) {
       return res.status(400).json({ message: "Alla fält måste fyllas i" });
     }
-    const chef = new Chef({ name, phone, email });
+    const chef = new Chef({
+      ...req.body,
+      userType: "chefer",
+    });
 
     await chef.save();
     unit.chef = chef._id;
