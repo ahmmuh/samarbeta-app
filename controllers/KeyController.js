@@ -3,7 +3,6 @@ import KeyModel from "../models/key.js";
 import KeyLog from "../models/keyLog.js";
 import User from "../models/user.js";
 import Specialist from "../models/specialist.js";
-import mongoose from "mongoose";
 
 //Hämta alla nycklar
 
@@ -82,6 +81,7 @@ export const displayBorrowedByUser = async (req, res) => {
       .json({ message: "Serverfel vid hämtning av borrowedUser" });
   }
 };
+
 export const checkOutKeyAndAssignToUser = async (req, res) => {
   const { keyId, userId, userType } = req.params;
 
@@ -124,8 +124,10 @@ export const checkOutKeyAndAssignToUser = async (req, res) => {
     // key.borrowedByModel = modelType;
     key.borrowedAt = new Date();
     key.borrowedBy = user._id;
-    await key.save();
+
+    console.log("USER i CHECKHOUT function i backend", user);
     console.log("Key som ska lånas ut, innan den sparas i databasen", key);
+    await key.save();
 
     // Lägg till nyckeln i användarens lista om den inte redan finns
     if (!user.keys.includes(key._id)) {
@@ -157,6 +159,8 @@ export const checkOutKeyAndAssignToUser = async (req, res) => {
 export const checkInKey = async (req, res) => {
   const { keyId, userId, userType } = req.params;
 
+  console.log(`KEYID: ${keyId}, USERID: ${userId}, USERTYPE: ${userType}`);
+
   if (!keyId || !userId || !userType) {
     return res
       .status(400)
@@ -174,18 +178,16 @@ export const checkInKey = async (req, res) => {
     switch (userType.toLowerCase()) {
       case "chefer":
         foundUser = await Chef.findById(userId);
+
         break;
       case "specialister":
         foundUser = await Specialist.findById(userId);
+
         break;
       default:
         return res
           .status(400)
           .json({ message: `Ogiltig användartyp: ${userType}` });
-    }
-
-    if (!foundUser) {
-      return res.status(404).json({ message: "Användare finns ej" });
     }
 
     if (foundKey.status !== "checked-out") {
@@ -195,30 +197,41 @@ export const checkInKey = async (req, res) => {
     }
 
     // Kontrollera att det faktiskt är rätt användare som lämnar tillbaka
-    if (!foundKey.borrowedBy || foundKey.borrowedBy.toString() !== userId) {
+    if (!foundUser) {
+      return res.status(404).json({
+        message: `Användare med id ${userId} och typ ${userType} hittades inte.`,
+      });
+    }
+
+    if (!foundKey.borrowedBy) {
       return res
         .status(400)
-        .json({ message: "Denna användare har inte lånat denna nyckel" });
+        .json({ message: "Nyckeln är inte utlånad till någon." });
+    }
+
+    if (foundKey.borrowedBy.toString() !== userId) {
+      return res.status(400).json({
+        message: "Denna användare har inte lånat denna nyckel.",
+        lånadAv: foundKey.borrowedBy.toString(),
+        duSkickade: userId,
+      });
     }
 
     // Uppdatera nyckelns status
     foundKey.status = "returned";
-    // const modelType =
-    //   userType.toLowerCase() === "chefer" ? "Chef" : "Specialist";
     foundKey.borrowedBy = null;
-    foundKey.borrowedByModel = null;
     foundKey.lastBorrowedBy = foundUser._id;
-    // foundKey.lastBorrowedByModel = modelType;
     foundKey.borrowedAt = null;
     foundKey.returnedAt = new Date();
-    await foundKey.save();
+    console.log("Nyckel som ska lämnas in, innan den sparas i databasen");
+    // await foundKey.save();
 
-    // Logga händelsen
-    await KeyLog.create({
-      key: foundKey._id,
-      user: foundUser._id,
-      action: "checkin",
-    });
+    //Logga händelsen
+    // await KeyLog.create({
+    //   key: foundKey._id,
+    //   user: foundUser._id,
+    //   action: "checkin",
+    // });
 
     return res.status(200).json({
       message: "Nyckeln har återlämnats",
@@ -331,10 +344,7 @@ export const addNewKey = async (req, res) => {
         .status(400)
         .json({ message: "keyLabel eller location saknas" });
     }
-    const newKey = new KeyModel();
-    if (newKey.borrowedByModel === "Chef") {
-      // newKey = await
-    }
+    const newKey = new KeyModel({ keyLabel, location });
 
     await newKey.save();
     console.log("NEW Key", newKey);
@@ -342,7 +352,7 @@ export const addNewKey = async (req, res) => {
   } catch (error) {
     console.error("Error vid skapande av ny nyckel", error);
     return res.status(500).json({
-      message: "Server fel när användare försökt lägga till en ny nyckeö",
+      message: "Server fel när användare försökt lägga till en ny nyckel",
     });
   }
 };

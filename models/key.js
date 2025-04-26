@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const keySchema = new mongoose.Schema(
   {
     keyLabel: { type: String, unique: true, required: true },
-    location: String, // var den normalt förvaras
+    location: String,
 
     status: {
       type: String,
@@ -13,20 +13,13 @@ const keySchema = new mongoose.Schema(
 
     borrowedBy: {
       type: mongoose.Schema.Types.ObjectId,
-      refPath: "borrowedByModel",
+      ref: "User",
       default: null,
     },
     lastBorrowedBy: {
       type: mongoose.Schema.Types.ObjectId,
-      refPath: "borrowedByModel",
-    },
-    // lastBorrowedByModel: { type: String, enum: ["Chef", "Specialist"] },
-    borrowedByModel: {
-      type: String,
-      required: function () {
-        return this.borrowedBy != null; // borrowedByModel krävs om borrowedBy finns
-      },
-      enum: ["Chef", "Specialist"],
+      ref: "User",
+      default: null,
     },
 
     borrowedAt: { type: Date, default: null },
