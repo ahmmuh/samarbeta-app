@@ -83,15 +83,17 @@ export const displayBorrowedByUser = async (req, res) => {
 };
 
 export const checkOutKeyAndAssignToUser = async (req, res) => {
-  const { keyId, userId, userType } = req.params;
+  const { keyId, userId } = req.params;
 
-  if (!keyId || !userId || !userType) {
-    return res
-      .status(400)
-      .json({ message: "keyId, userId och userType krävs" });
+  if (!keyId || !userId) {
+    return res.status(400).json({ message: "keyId och userId krävs" });
   }
 
   try {
+    // Hämta användare för att få tillgång till userType
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "Användare finns ej" });
+
     // Hämta nyckeln
     const key = await KeyModel.findById(keyId);
     if (!key) return res.status(404).json({ message: "Nyckeln finns ej" });
@@ -100,52 +102,41 @@ export const checkOutKeyAndAssignToUser = async (req, res) => {
       return res.status(400).json({ message: "Nyckeln är inte tillgänglig" });
     }
 
-    // Dynamisk användare beroende på typ
-    let user;
-    switch (userType.toLowerCase()) {
+    // Dynamisk användare beroende på userType
+    let foundUser;
+    switch (user.userType) {
       case "chefer":
-        user = await Chef.findById(userId);
+        foundUser = await Chef.findById(userId);
         break;
       case "specialister":
-        user = await Specialist.findById(userId);
+        foundUser = await Specialist.findById(userId);
         break;
       default:
         return res.status(400).json({ message: "Ogiltig användartyp" });
     }
 
-    if (!user) {
-      return res.status(404).json({ message: "Användare finns ej" });
-    }
-
     // Uppdatera nyckelns status
     key.status = "checked-out";
-    // const modelType =
-    //   userType.toLowerCase() === "chefer" ? "Chef" : "Specialist";
-    // key.borrowedByModel = modelType;
     key.borrowedAt = new Date();
-    key.borrowedBy = user._id;
-
-    console.log("USER i CHECKHOUT function i backend", user);
-    console.log("Key som ska lånas ut, innan den sparas i databasen", key);
+    key.borrowedBy = foundUser._id;
     await key.save();
 
     // Lägg till nyckeln i användarens lista om den inte redan finns
-    if (!user.keys.includes(key._id)) {
-      user.keys.push(key._id);
-      await user.save();
+    if (!foundUser.keys.includes(key._id)) {
+      foundUser.keys.push(key._id);
+      await foundUser.save();
     }
-    console.log("Användare som ska låna nyckeln", user);
 
     // Logga händelsen
     await KeyLog.create({
       key: key._id,
-      user: user._id,
+      user: foundUser._id,
       action: "checkout",
     });
 
     return res.status(200).json({
-      message: `Nyckeln har lånats ut till ${userType.slice(0, -1)}`,
-      user,
+      message: `Nyckeln har lånats ut till ${user.userType}`,
+      foundUser,
       key,
     });
   } catch (error) {
@@ -157,56 +148,37 @@ export const checkOutKeyAndAssignToUser = async (req, res) => {
 // Återlämna nycklar
 
 export const checkInKey = async (req, res) => {
-  const { keyId, userId, userType } = req.params;
+  const { keyId, userId } = req.params;
 
-  console.log(`KEYID: ${keyId}, USERID: ${userId}, USERTYPE: ${userType}`);
-
-  if (!keyId || !userId || !userType) {
-    return res
-      .status(400)
-      .json({ message: "Det krävs keyId, userId och userType" });
+  if (!keyId || !userId) {
+    return res.status(400).json({ message: "Det krävs keyId och userId" });
   }
 
   try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "Användare finns ej" });
+
     const foundKey = await KeyModel.findById(keyId);
-    if (!foundKey) {
-      return res.status(404).json({ message: "Nyckeln finns ej" });
-    }
+    if (!foundKey) return res.status(404).json({ message: "Nyckeln finns ej" });
 
     let foundUser;
-
-    switch (userType.toLowerCase()) {
+    switch (user.userType) {
       case "chefer":
         foundUser = await Chef.findById(userId);
-
         break;
       case "specialister":
         foundUser = await Specialist.findById(userId);
-
         break;
       default:
         return res
           .status(400)
-          .json({ message: `Ogiltig användartyp: ${userType}` });
+          .json({ message: `Ogiltig användartyp: ${user.userType}` });
     }
 
     if (foundKey.status !== "checked-out") {
       return res
         .status(400)
         .json({ message: "Nyckeln är inte utlånad och kan inte återlämnas" });
-    }
-
-    // Kontrollera att det faktiskt är rätt användare som lämnar tillbaka
-    if (!foundUser) {
-      return res.status(404).json({
-        message: `Användare med id ${userId} och typ ${userType} hittades inte.`,
-      });
-    }
-
-    if (!foundKey.borrowedBy) {
-      return res
-        .status(400)
-        .json({ message: "Nyckeln är inte utlånad till någon." });
     }
 
     if (foundKey.borrowedBy.toString() !== userId) {
@@ -219,19 +191,18 @@ export const checkInKey = async (req, res) => {
 
     // Uppdatera nyckelns status
     foundKey.status = "returned";
+    foundKey.lastBorrowedBy = foundKey.borrowedBy;
     foundKey.borrowedBy = null;
-    foundKey.lastBorrowedBy = foundUser._id;
     foundKey.borrowedAt = null;
     foundKey.returnedAt = new Date();
-    console.log("Nyckel som ska lämnas in, innan den sparas i databasen");
-    // await foundKey.save();
+    await foundKey.save();
 
-    //Logga händelsen
-    // await KeyLog.create({
-    //   key: foundKey._id,
-    //   user: foundUser._id,
-    //   action: "checkin",
-    // });
+    // Logga händelsen
+    await KeyLog.create({
+      key: foundKey._id,
+      user: foundUser._id,
+      action: "checkin",
+    });
 
     return res.status(200).json({
       message: "Nyckeln har återlämnats",

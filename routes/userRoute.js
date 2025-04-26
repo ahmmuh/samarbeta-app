@@ -12,11 +12,8 @@ userRouter.get("/users", getAllUsers);
 userRouter.get("/keys/:keyId/users/:userId", displayBorrowedByUser);
 
 // keyRoute.patch("/keys/checkout", checkOutKey);
-userRouter.patch("/:userType/:userId/keys/:keyId/checkin", checkInKey);
+userRouter.patch("/checkin/keys/:keyId/:userId", checkInKey);
 
-userRouter.patch(
-  "/:userType/:userId/keys/:keyId/checkout",
-  checkOutKeyAndAssignToUser
-);
+userRouter.patch("/checkout/keys/:keyId/:userId", checkOutKeyAndAssignToUser);
 
 export default userRouter;
