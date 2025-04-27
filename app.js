@@ -25,6 +25,7 @@ app.use(express.json());
 //   next();
 // });
 app.use(cors());
+app.use("/api", userRouter);
 app.use("/api", unitRouter);
 app.use("/api", specialistRoute);
 app.use("/api", chefRoute);
@@ -34,7 +35,6 @@ app.use("/api", workplaceRoute);
 app.use("/api", keyRoute);
 app.use("/api", keyLogRoute);
 app.use("/api", apartmentRoute);
-app.use("/api", userRouter);
 // Optional logging middleware (can be uncommented for debugging)
 // app.use((req, res, next) => {
 //   console.log("Incoming request method:", req.method); // Log the HTTP method

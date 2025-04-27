@@ -3,6 +3,7 @@ import KeyModel from "../models/key.js";
 import KeyLog from "../models/keyLog.js";
 import User from "../models/user.js";
 import Specialist from "../models/specialist.js";
+import mongoose from "mongoose";
 
 //Hämta alla nycklar
 
@@ -44,21 +45,25 @@ export const displayBorrowedByUser = async (req, res) => {
 
     let borrower;
 
-    // if (
-    //   typeof borrower === "string" ||
-    //   borrower instanceof mongoose.Types.ObjectId
-    // ) {
-    //   borrower = await User.findById(borrower);
-    //   console.log("Hämtad borrower från User.findById:", borrower);
-    // }
-
-    if (key.borrowedByModel === "Chef") {
-      borrower = await Chef.findById(key.borrowedBy);
-    } else if (key.borrowedByModel === "Specialist") {
-      borrower = await Specialist.findById(key.borrowedBy);
-    } else {
-      return res.status(400).json({ message: "Ogiltig modell för låntagare" });
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(400).json({ message: "Denna USER finns ej" });
     }
+
+    switch (user.userType) {
+      case "chefer":
+        borrower = await Chef.findById(key.borrowedBy);
+        break;
+      case "specialister":
+        borrower = await Specialist.findById(key.borrowedBy);
+        break;
+
+      default:
+        return res
+          .status(400)
+          .json({ message: "Ogiltig modell för låntagare" });
+    }
+
     if (!borrower) {
       return res
         .status(400)
@@ -83,17 +88,14 @@ export const displayBorrowedByUser = async (req, res) => {
 };
 
 export const checkOutKeyAndAssignToUser = async (req, res) => {
-  const { keyId, userId } = req.params;
+  const { userType, keyId, userId } = req.params;
+  console.log("User ID före anropet i checkOutKeyAndAssignToUser()", userId);
 
   if (!keyId || !userId) {
     return res.status(400).json({ message: "keyId och userId krävs" });
   }
 
   try {
-    // Hämta användare för att få tillgång till userType
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "Användare finns ej" });
-
     // Hämta nyckeln
     const key = await KeyModel.findById(keyId);
     if (!key) return res.status(404).json({ message: "Nyckeln finns ej" });
@@ -104,7 +106,7 @@ export const checkOutKeyAndAssignToUser = async (req, res) => {
 
     // Dynamisk användare beroende på userType
     let foundUser;
-    switch (user.userType) {
+    switch (userType.toLowerCase()) {
       case "chefer":
         foundUser = await Chef.findById(userId);
         break;
@@ -135,7 +137,7 @@ export const checkOutKeyAndAssignToUser = async (req, res) => {
     });
 
     return res.status(200).json({
-      message: `Nyckeln har lånats ut till ${user.userType}`,
+      message: `Nyckeln har lånats ut till ${userType}`,
       foundUser,
       key,
     });
@@ -148,33 +150,41 @@ export const checkOutKeyAndAssignToUser = async (req, res) => {
 // Återlämna nycklar
 
 export const checkInKey = async (req, res) => {
-  const { keyId, userId } = req.params;
+  const { userType, keyId, userId } = req.params;
 
-  if (!keyId || !userId) {
-    return res.status(400).json({ message: "Det krävs keyId och userId" });
+  if (
+    !mongoose.Types.ObjectId.isValid(userId) ||
+    !mongoose.Types.ObjectId.isValid(keyId)
+  ) {
+    return res
+      .status(400)
+      .json({ message: "Ogiltigt användar-ID ELLER Key-ID" });
   }
+  console.log(`Vi hittade användare-ID ${userId}`);
+  console.log(`Vi hittade KEY-ID ${keyId}`);
 
   try {
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "Användare finns ej" });
-
     const foundKey = await KeyModel.findById(keyId);
     if (!foundKey) return res.status(404).json({ message: "Nyckeln finns ej" });
 
     let foundUser;
-    switch (user.userType) {
+    switch (userType.toLowerCase()) {
       case "chefer":
         foundUser = await Chef.findById(userId);
+        console.log("FoundUser inuti switch (chef)", foundUser);
         break;
       case "specialister":
         foundUser = await Specialist.findById(userId);
+        console.log("FoundUser inuti switch (specialist)", foundUser);
         break;
       default:
         return res
           .status(400)
-          .json({ message: `Ogiltig användartyp: ${user.userType}` });
+          .json({ message: `Ogiltig användartyp: ${userType}` });
     }
-
+    if (!foundUser) {
+      return res.status(404).json({ message: "Användaren hittades inte" });
+    }
     if (foundKey.status !== "checked-out") {
       return res
         .status(400)
@@ -440,7 +450,7 @@ export const updateKey = async (req, res) => {
 export const deleteKey = async (req, res) => {
   const { keyId } = req.params;
   try {
-    const deletedKey = await KeyModel.findByIdAndDelete(keyId, { new: true });
+    const deletedKey = await KeyModel.findByIdAndDelete(keyId);
     return res.status(200).json({
       message: "Nyckel med ID " + deletedKey._id + " has been deleted",
     });
