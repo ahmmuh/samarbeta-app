@@ -11,6 +11,7 @@ export const getAllKeys = async (req, res) => {
   try {
     // console.log("Alla modells", mongoose.models);
     const keys = await KeyModel.find().populate("borrowedBy");
+    console.log("Alla nycklar med borrowedBy:", keys);
     if (keys.length === 0) {
       return res
         .status(400)
