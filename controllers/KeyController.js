@@ -10,7 +10,7 @@ import mongoose from "mongoose";
 export const getAllKeys = async (req, res) => {
   try {
     // console.log("Alla modells", mongoose.models);
-    const keys = await KeyModel.find().populate("borrowedBy");
+    const keys = await KeyModel.find();
     console.log("Alla nycklar med borrowedBy:", keys);
     if (keys.length === 0) {
       return res
@@ -88,6 +88,8 @@ export const displayBorrowedByUser = async (req, res) => {
   }
 };
 
+//Låna ut nycklar
+
 export const checkOutKeyAndAssignToUser = async (req, res) => {
   const { userType, keyId, userId } = req.params;
   console.log("User ID före anropet i checkOutKeyAndAssignToUser()", userId);
@@ -119,9 +121,13 @@ export const checkOutKeyAndAssignToUser = async (req, res) => {
     }
 
     // Uppdatera nyckelns status
+    if (key.borrowedBy) {
+      return res.status(400).json({ message: "Nyckeln är redan utlånad." });
+    }
     key.status = "checked-out";
     key.borrowedAt = new Date();
     key.borrowedBy = foundUser._id;
+    key.returnedAt = null;
     await key.save();
 
     // Lägg till nyckeln i användarens lista om den inte redan finns
@@ -192,10 +198,10 @@ export const checkInKey = async (req, res) => {
         .json({ message: "Nyckeln är inte utlånad och kan inte återlämnas" });
     }
 
-    if (foundKey.borrowedBy.toString() !== userId) {
+    if (!foundKey.borrowedBy || foundKey.borrowedBy.toString() !== userId) {
       return res.status(400).json({
         message: "Denna användare har inte lånat denna nyckel.",
-        lånadAv: foundKey.borrowedBy.toString(),
+        lånadAv: foundKey.borrowedBy ? foundKey.borrowedBy.toString() : null,
         duSkickade: userId,
       });
     }
