@@ -10,7 +10,7 @@ import mongoose from "mongoose";
 export const getAllKeys = async (req, res) => {
   try {
     // console.log("Alla modells", mongoose.models);
-    const keys = await KeyModel.find();
+    const keys = await KeyModel.find().populate("borrowedBy");
     console.log("Alla nycklar med borrowedBy:", keys);
     if (keys.length === 0) {
       return res
@@ -127,6 +127,9 @@ export const checkOutKeyAndAssignToUser = async (req, res) => {
     key.status = "checked-out";
     key.borrowedAt = new Date();
     key.borrowedBy = foundUser._id;
+    key.borrowedByModel =
+      userType.toLowerCase() === "chefer" ? "Chef" : "Specialist";
+
     key.returnedAt = null;
     await key.save();
 
@@ -257,50 +260,30 @@ export const getKeyFromUser = async (req, res) => {
 // inte färdig kodat - hämta nycklar hos användare
 
 export const getKey = async (req, res) => {
-  const { keyId, userId, userType } = req.params;
+  const { keyId, userId } = req.params;
   if (!keyId) return res.status(400).json({ message: "Nyckel ID krävs" });
-  // if (!userId) return res.status(400).json({ message: "Användare ID krävs" });
-  console.log(`Key ID: ${keyId}`);
+  if (!userId) return res.status(400).json({ message: "Användare ID krävs" });
 
   try {
-    const foundedKey = await KeyModel.findById(keyId);
+    const foundedKey = await KeyModel.findById(keyId).populate("borrowedBy");
+    console.log("Founded Key details:", JSON.stringify(foundedKey, null, 2));
+
     if (!foundedKey) {
       return res.status(400).json({ message: "Nyckeln finns ej" });
     }
 
-    // let foundUser;
-    // const type = userType.toLowerCase();
+    // Kontrollera om borrowedBy är samma som userId
+    if (!foundedKey.borrowedBy) {
+      return res.status(400).json({ message: "Nyckeln är inte utlånad" });
+    }
 
-    // switch (type) {
-    //   case "chefer":
-    //     foundUser = await Chef.findById(userId);
-    //     break;
-    //   case "specialister":
-    //     foundUser = await Specialist.findById(userId);
-    //     break;
-    //   default:
-    //     return res
-    //       .status(400)
-    //       .json({ message: `Ogiltig användartyp: ${userType}` });
-    // }
-
-    // console.log(
-    //   "Founded User i getKey() function innan if statement and after swtich ",
-    //   foundUser
-    // );
-
-    // if (!foundUser) {
-    //   return res.status(404).json({ message: "Användare finns ej" });
-    // }
-
-    // if (!foundUser.keys.includes(foundedKey._id)) {
-    //   return res
-    //     .status(400)
-    //     .json({ message: "Användaren har inte denna nyckel" });
-    // }
-
-    // console.log("Founded User i getKey() function ", foundUser);
+    if (foundedKey.borrowedBy._id.toString() !== userId) {
+      return res
+        .status(400)
+        .json({ message: "Den här användaren har inte lånat denna nyckel" });
+    }
     console.log("Founded key i getKey() function", foundedKey);
+
     return res.status(200).json(foundedKey);
   } catch (error) {
     return res

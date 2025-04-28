@@ -12,7 +12,7 @@ const keyRoute = express.Router();
 keyRoute.post("/keys/add", addNewKey);
 
 keyRoute.get("/keys", getAllKeys);
-keyRoute.get("/keys/:keyId", getKey);
+keyRoute.get("/keys/:keyId/:userId", getKey);
 
 keyRoute.patch("/keys/:keyId", updateKey);
 keyRoute.delete("/keys/:keyId", deleteKey);
