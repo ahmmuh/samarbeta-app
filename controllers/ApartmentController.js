@@ -89,7 +89,7 @@ export const updateApartment = async (req, res) => {
     );
     res
       .status(200)
-      .json({ message: "apartment uppdaterades", enhet: updateApartment });
+      .json({ message: "apartment uppdaterades", enhet: updatedApartment });
   } catch (error) {
     console.log("Error", error.message);
     res.status(500).json({ message: "Internal Error", error });
