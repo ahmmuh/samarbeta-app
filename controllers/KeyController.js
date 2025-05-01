@@ -292,6 +292,31 @@ export const getKey = async (req, res) => {
   }
 };
 
+export const getKeyById = async (req, res) => {
+  const { keyId } = req.params;
+
+  if (!keyId) {
+    return res.status(400).json({ message: "Nyckel ID krävs" });
+  }
+
+  try {
+    const foundedKey = await KeyModel.findById(keyId)
+      .populate("borrowedBy")
+      .populate("lastBorrowedBy"); // Lägg till om du också vill visa tidigare användare
+
+    if (!foundedKey) {
+      return res.status(404).json({ message: "Nyckeln finns ej" });
+    }
+
+    return res.status(200).json(foundedKey);
+  } catch (error) {
+    console.error("Fel vid hämtning av nyckel:", error);
+    return res
+      .status(500)
+      .json({ message: "Serverfel vid hämtning av nyckel" });
+  }
+};
+
 //Lägga till bara nycklar, ingen användare
 
 export const addNewKey = async (req, res) => {
