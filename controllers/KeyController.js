@@ -161,6 +161,9 @@ export const checkOutKeyAndAssignToUser = async (req, res) => {
 
 export const checkInKey = async (req, res) => {
   const { userType, keyId, userId } = req.params;
+  if (!userId || userId === "null" || userId === "undefined") {
+    return res.status(400).json({ message: "Ingen lånetagare vald" });
+  }
 
   if (
     !mongoose.Types.ObjectId.isValid(userId) ||
@@ -223,6 +226,8 @@ export const checkInKey = async (req, res) => {
       user: foundUser._id,
       action: "checkin",
     });
+
+    // await KeyLog.deleteMany({});
 
     return res.status(200).json({
       message: "Nyckeln har återlämnats",
