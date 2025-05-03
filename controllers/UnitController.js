@@ -2,23 +2,6 @@ import Specialist from "../models/specialist.js";
 import Task from "../models/task.js";
 import { Unit } from "../models/unit.js";
 
-// async function clearAllData() {
-//   try {
-//     // Delete all documents in the collections (but not the collections themselves)
-//     await Unit.deleteMany({});
-//     await Specialist.deleteMany({});
-//     await Task.deleteMany({});
-//     await WorkPlace.deleteMany({});
-
-//     console.log("All documents have been deleted, but collections are intact.");
-//   } catch (error) {
-//     console.error("Error clearing data:", error);
-//   }
-// }
-
-// // Call the function to clear all data in collections
-// clearAllData();
-
 export const getAllUnits = async (req, res) => {
   try {
     const units = await Unit.find()

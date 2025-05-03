@@ -13,6 +13,8 @@ import keyRoute from "./routes/keyRoute.js";
 import userRouter from "./routes/userRoute.js";
 import keyLogRoute from "./routes/keyLogsRoute.js";
 import apartmentRoute from "./routes/apartmentRoute.js";
+import { autoAssignMorningTasks } from "./controllers/CronController.js";
+import cronJobRoute from "./routes/cronJobRoute.js";
 const app = express();
 const port = 8000;
 
@@ -35,6 +37,7 @@ app.use("/api", workplaceRoute);
 app.use("/api", keyRoute);
 app.use("/api", keyLogRoute);
 app.use("/api", apartmentRoute);
+app.use("/api/cronjobs", cronJobRoute);
 // Optional logging middleware (can be uncommented for debugging)
 // app.use((req, res, next) => {
 //   console.log("Incoming request method:", req.method); // Log the HTTP method
