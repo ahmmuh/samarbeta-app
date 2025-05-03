@@ -12,9 +12,8 @@ const taskSchema = new mongoose.Schema(
     },
     unit: { type: mongoose.Schema.Types.ObjectId, ref: "Unit" },
   },
-  {
-    // timestamps: { createdAt: "skapad", updatedAt: "senast ändrad" },
-  }
+
+  { timestamps: true }
 );
 
 const Task = mongoose.model("Task", taskSchema);

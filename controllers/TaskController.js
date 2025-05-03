@@ -62,10 +62,32 @@ export const assignTaskToUnit = async (req, res) => {
     return res.status(500).json({ message: "Internt serverfel" });
   }
 };
-export const getAllTasks = async (req, res) => {
+export const getAllTasksByUnits = async (req, res) => {
   try {
     const { unitId } = req.params;
     const tasks = await Unit.findById(unitId).populate("tasks");
+    return res.status(200).json(tasks);
+  } catch (error) {
+    console.log("Error", error.message);
+    return res.status(500).json({ message: "Internal Server Error", error });
+  }
+};
+
+export const getAllTasks = async (req, res) => {
+  // await Task.updateMany({}, [
+  //   {
+  //     $set: {
+  //       createdAt: "$skapats",
+  //       updatedAt: "$Uppdaterats",
+  //     },
+  //   },
+  //   {
+  //     $unset: ["skapats", "Uppdaterats"],
+  //   },
+  // ]);
+
+  try {
+    const tasks = await Task.find().populate("unit");
     return res.status(200).json(tasks);
   } catch (error) {
     console.log("Error", error.message);

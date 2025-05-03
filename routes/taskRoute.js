@@ -4,6 +4,7 @@ import {
   assignTaskToUnit,
   deleteTask,
   getAllTasks,
+  getAllTasksByUnits,
   getTask,
   getTaskStatuses,
   updateTask,
@@ -12,7 +13,9 @@ import {
 const taskRoute = express.Router();
 
 //Tasks
-taskRoute.get("/units/:unitId/tasks", getAllTasks);
+taskRoute.get("/units/:unitId/tasks", getAllTasksByUnits);
+taskRoute.get("/tasks", getAllTasks);
+
 taskRoute.patch("/units/:unitId/tasks/add", addTaskToUnit);
 taskRoute.get("/units/:unitId/tasks/:taskId", getTask);
 taskRoute.delete("/units/:unitId/tasks/:taskId", deleteTask);
