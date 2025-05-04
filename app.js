@@ -35,11 +35,11 @@ app.use("/api", chefRoute);
 app.use("/api", taskRoute);
 app.use("/api", googlePlaceRoute);
 app.use("/api", workplaceRoute);
+app.use("/api", qrCodeRoute);
 app.use("/api", keyRoute);
 app.use("/api", keyLogRoute);
 app.use("/api", apartmentRoute);
 app.use("/api/cronjobs", cronJobRoute);
-app.use("/api", qrCodeRoute);
 app.listen(port, () => {
   console.log(`The Server listening on port ${port}`);
   getConnection();

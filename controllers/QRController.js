@@ -6,7 +6,7 @@ import KeyModel from "../models/key.js";
 
 // utils/generateQRCodeWithLabel.js
 
- const generateQRCodeWithLabel = async ({ qrText, line1, line2 }) => {
+const generateQRCodeWithLabel = async ({ qrText, line1, line2 }) => {
   const width = 300;
   const height = 380; // extra plats för två rader text
   const canvas = createCanvas(width, height);
@@ -37,32 +37,33 @@ export const registerNewKey = async (req, res) => {
   const { keyLabel, location } = req.body;
 
   if (!keyLabel || !location) {
-    return res
-      .status(400)
-      .json({ message: `${keyLabel} eller ${location} saknas` });
+    return res.status(400).json({ message: "keyLabel eller location saknas" });
   }
 
   try {
-    // Kontrollera om nyckel med samma label redan finns
     const existingKey = await KeyModel.findOne({ keyLabel });
     if (existingKey) {
       return res.status(409).json({ message: "Nyckel finns redan" });
     }
 
-    // Skapa och spara ny nyckel
+    // 1. Spara nyckeln först
     const newKey = new KeyModel({ keyLabel, location });
-    // await newKey.save();
+    await newKey.save(); // först här skapas _id
 
-    const qrCodeWithText = await generateQRCodeWithLabel({
-      qrText: keyLabel,
+    // 2. Generera QR med _id
+    const qrCode = await generateQRCodeWithLabel({
+      qrText: newKey._id.toString(), // <-- lägg in ID i QR-kod
       line1: keyLabel,
       line2: location,
     });
 
+    // 3. Uppdatera nyckeln med QR-koden
+    newKey.qrCode = qrCode;
+    await newKey.save();
+
     return res.status(201).json({
-      message: "Nyckel har registrerats",
+      message: "Nyckel registrerad",
       key: newKey,
-      qrCode: qrCodeWithText, // ← base64-bild att visa/spara
     });
   } catch (error) {
     console.error(error);
@@ -70,5 +71,24 @@ export const registerNewKey = async (req, res) => {
       message: "Serverfel vid registrering av ny nyckel",
       error: error.message,
     });
+  }
+};
+
+//GET All key med QRCode
+
+export const getKeysWithQRCode = async (req, res) => {
+  try {
+    // Hämta alla enheter först
+    const keys = await KeyModel.find();
+    if (keys.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "Det finns inga nycklar att visa" });
+    }
+
+    return res.status(200).json(keys);
+  } catch (error) {
+    console.error("Fel vid hämtning av keys i :", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
