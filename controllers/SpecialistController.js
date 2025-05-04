@@ -1,7 +1,7 @@
 //get Alla specialist via unit
 
 import Specialist from "../models/specialist.js";
-import { Unit } from "../models/unit.js";
+import Unit from "../models/unit.js";
 
 export const getTestSpecialister = async (req, res) => {
   try {

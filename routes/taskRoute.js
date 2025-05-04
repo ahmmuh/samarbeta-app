@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  addTask,
   addTaskToUnit,
   assignTaskToUnit,
   deleteTask,
@@ -18,9 +19,10 @@ taskRoute.get("/tasks", getAllTasks);
 
 taskRoute.patch("/units/:unitId/tasks/add", addTaskToUnit);
 taskRoute.get("/units/:unitId/tasks/:taskId", getTask);
-taskRoute.delete("/units/:unitId/tasks/:taskId", deleteTask);
+taskRoute.delete("/tasks/:taskId", deleteTask);
 taskRoute.get("/units/:unitId/tasks/statuses", getTaskStatuses);
 taskRoute.patch("/units/:unitId/tasks/:taskId/assign", assignTaskToUnit);
+taskRoute.post("/tasks/add", addTask);
 
 taskRoute.patch("/tasks/:taskId/update", updateTask);
 

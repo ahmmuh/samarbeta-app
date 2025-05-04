@@ -15,4 +15,6 @@ const unitSchema = new mongoose.Schema(
     timestamps: { createdAt: "skapats", updatedAt: "Uppdaterats" },
   }
 );
-export const Unit = mongoose.model("Unit", unitSchema);
+const Unit = mongoose.model("Unit", unitSchema);
+
+export default Unit;

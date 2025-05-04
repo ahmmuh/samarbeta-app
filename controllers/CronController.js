@@ -1,235 +1,133 @@
-import { Unit } from "../models/unit.js";
-import Specialist from "../models/specialist.js";
+import Unit from "../models/unit.js";
 import Task from "../models/task.js";
+import Specialist from "../models/specialist.js";
 
-// Help functions
-
-//Hämta units med specialist och task
-
-const getTask = async () => {
-  const unassignedTasks = await Task.find({
-    unit: null,
-    completed: "Ej påbörjat",
-  });
-  return unassignedTasks;
-};
-
-const getUnitsWithChildren = async (res) => {
+export const autoAssignTasks = async (req = null, res = null) => {
   try {
-    const units = await Unit.find().populate("specialister tasks");
-    const unassignedTasks = await getTask();
+    // Hämta alla enheter och deras aktiva specialister
+    const units = await Unit.find().populate("specialister");
+    const changeLog = [];
 
-    if (unassignedTasks.length === 0) {
-      const msg = "Inga uppgifter att fördela";
-      if (res) return res.status(200).json({ units, unassignedTasks: [] });
-      console.log(msg);
-      return { units: [], unassignedTasks: [] }; // Se till att returnera här
-    }
-
-    return { units, unassignedTasks }; // Returnera enheterna och uppgifterna
-  } catch (error) {
-    console.error("Fel vid hämtning av enheter:", error); // Logga felmeddelandet
-    if (res) {
-      return res
-        .status(500)
-        .json({ message: "Fel vid hämtning av enheter", error: error.message });
-    }
-    return { units: [], unassignedTasks: [] };
-  }
-};
-
-//Fördela arbeten automatiskt
-export const autoAssignMorningTasks = async (req = null, res = null) => {
-  try {
-    // Destrukturera units och unassignedTasks från getUnitsWithChildren
-    const { units, unassignedTasks } = await getUnitsWithChildren(res);
-
-    // Om inga uppgifter finns, returnera direkt med ett meddelande
-    if (unassignedTasks.length === 0) {
-      const msg = "Inga uppgifter att fördela";
-      if (res) return res.status(200).json({ message: msg });
-      console.log(msg);
-      return;
-    }
-
-    const unitInfos = await Promise.all(
+    // Samla information om varje enhet
+    const unitDetails = await Promise.all(
       units.map(async (unit) => {
         const activeSpecialists = await Specialist.find({
-          _id: { $in: unit.specialister },
+          _id: { $in: unit.specialister.map((s) => s._id) },
           isAbsent: false,
         });
 
-        let maxTasks = 0;
-        if (activeSpecialists.length === 1) {
-          maxTasks = 2;
-        } else if (activeSpecialists.length >= 2) {
-          maxTasks = 3;
-        }
+        // Hämta både pågående och färdiga uppgifter
+        const currentTasks = await Task.find({
+          unit: unit._id,
+          completed: "Ej påbörjat",
+        });
+        // console.log("Alla currentTasks", currentTasks);
 
-        const activeTasks = unit.tasks.filter(
-          (t) => t.completed !== "Färdigt" && t.completed !== "Påbörjat"
-        );
+        const completedTasks = await Task.find({
+          unit: unit._id,
+          completed: "Färdigt",
+        });
 
         return {
           unit,
-          currentTasks: activeTasks.length,
-          maxTasks,
-          assigned: 0,
+          activeSpecialistsCount: activeSpecialists.length,
+          currentTaskCount: currentTasks.length,
+          completedTaskCount: completedTasks.length,
+          maxAllowedTasks: activeSpecialists.length === 1 ? 2 : 3, // 2 för en specialist, 3 för två
         };
       })
     );
 
-    let taskIndex = 0;
-    let assignedInRound = true;
+    // Hämta alla ej påbörjade uppgifter
+    const unassignedTasks = await Task.find({
+      completed: "Ej påbörjat",
+      unit: null,
+    }).sort({ createdAt: 1 });
 
-    while (assignedInRound && taskIndex < unassignedTasks.length) {
-      assignedInRound = false;
+    // Fördela uppgifter
+    for (const task of unassignedTasks) {
+      // Uppdatera enheternas aktuella uppgiftsantal baserat på färdiga uppgifter
+      const eligibleUnit = unitDetails
+        .filter((info) => {
+          // Kontrollera max uppgifter baserat på antal specialister
+          const maxTasks = info.activeSpecialistsCount === 1 ? 2 : 3;
+          return info.currentTaskCount < maxTasks;
+        })
+        .sort((a, b) => a.currentTaskCount - b.currentTaskCount)[0];
 
-      const eligibleUnits = unitInfos
-        .filter((u) => u.currentTasks + u.assigned < u.maxTasks)
-        .sort((a, b) => {
-          const totalA = a.currentTasks + a.assigned;
-          const totalB = b.currentTasks + b.assigned;
-          if (totalA !== totalB) return totalA - totalB;
-          return Math.random() - 0.5;
+      if (eligibleUnit) {
+        await Task.findByIdAndUpdate(task._id, {
+          unit: eligibleUnit.unit._id,
         });
 
-      for (const u of eligibleUnits) {
-        if (taskIndex >= unassignedTasks.length) break;
+        eligibleUnit.currentTaskCount++;
 
-        const task = unassignedTasks[taskIndex];
-        task.unit = u.unit._id;
-        await task.save();
-        u.unit.tasks.push(task._id);
-        u.assigned++;
-        taskIndex++;
-        assignedInRound = true;
+        changeLog.push({
+          taskId: task._id,
+          unitName: eligibleUnit.unit.name,
+          currentTaskCount: eligibleUnit.currentTaskCount,
+          maxTasks: eligibleUnit.maxAllowedTasks,
+          specialistsCount: eligibleUnit.activeSpecialistsCount,
+        });
       }
     }
 
-    for (const u of unitInfos) {
-      if (u.assigned > 0) await u.unit.save();
+    // Kontrollera färdiga uppgifter och omfördela
+    for (const unitInfo of unitDetails) {
+      const completedTasks = await Task.find({
+        unit: unitInfo.unit._id,
+        completed: "Färdigt",
+      });
+
+      if (
+        completedTasks.length > 0 &&
+        unitInfo.currentTaskCount < unitInfo.maxAllowedTasks
+      ) {
+        // Hitta en ny uppgift att tilldela
+        const newTask = await Task.findOne({
+          completed: "Ej påbörjat",
+          unit: null,
+        });
+
+        if (newTask) {
+          await Task.findByIdAndUpdate(newTask._id, {
+            unit: unitInfo.unit._id,
+          });
+
+          unitInfo.currentTaskCount++;
+
+          changeLog.push({
+            taskId: newTask._id,
+            unitName: unitInfo.unit.name,
+            currentTaskCount: unitInfo.currentTaskCount,
+            maxTasks: unitInfo.maxAllowedTasks,
+            specialistsCount: unitInfo.activeSpecialistsCount,
+            replacingCompletedTask: true,
+          });
+        }
+      }
     }
 
-    const assignmentLog = unitInfos
-      .filter((u) => u.assigned > 0)
-      .map((u) => ({
-        enhet: u.unit.name,
-        tilldeladeUppgifter: u.assigned,
-        totaltEfter: u.currentTasks + u.assigned,
-        maxTillåtna: u.maxTasks,
-      }));
-
-    const responseData = {
-      message: "Uppgifter tilldelades tills inga fler kunde delas ut.",
-      totaltTilldelade: taskIndex,
-      fördelning: assignmentLog,
-    };
+    if (changeLog.length > 0) {
+      // console.log("Fördelning slutförd:", changeLog);
+    }
 
     if (res) {
-      return res.status(200).json(responseData);
-    } else {
-      console.log("[CRON]:", responseData);
+      return res.status(200).json({
+        message:
+          changeLog.length > 0
+            ? "Uppgifter har fördelats"
+            : "Inga nya uppgifter att fördela",
+        changes: changeLog,
+      });
     }
   } catch (error) {
-    console.error("Fel vid uppgiftsfördelning:", error);
+    console.error("Fel vid fördelning:", error);
     if (res) {
-      return res
-        .status(500)
-        .json({ message: "Internt serverfel vid uppgiftsfördelning" });
+      return res.status(500).json({
+        message: "Ett fel uppstod vid fördelning av uppgifter",
+        error: error.message,
+      });
     }
   }
 };
-
-//Fördela arbeten automatiskt
-// export const autoAssignMorningTasks = async (req = null, res = null) => {
-//   try {
-//     const units = await getUnitsWithChildren(res);
-//     const unitInfos = await Promise.all(
-//       units.map(async (unit) => {
-//         const activeSpecialists = await Specialist.find({
-//           _id: { $in: unit.specialister },
-//           isAbsent: false,
-//         });
-
-//         let maxTasks = 0;
-//         if (activeSpecialists.length === 1) {
-//           maxTasks = 2;
-//         } else if (activeSpecialists.length >= 2) {
-//           maxTasks = 3;
-//         }
-
-//         const activeTasks = unit.tasks.filter(
-//           (t) => t.completed !== "Färdigt" && t.completed !== "Påbörjat"
-//         );
-
-//         return {
-//           unit,
-//           currentTasks: activeTasks.length,
-//           maxTasks,
-//           assigned: 0,
-//         };
-//       })
-//     );
-
-//     let taskIndex = 0;
-//     let assignedInRound = true;
-
-//     while (assignedInRound && taskIndex < unassignedTasks.length) {
-//       assignedInRound = false;
-
-//       const eligibleUnits = unitInfos
-//         .filter((u) => u.currentTasks + u.assigned < u.maxTasks)
-//         .sort((a, b) => {
-//           const totalA = a.currentTasks + a.assigned;
-//           const totalB = b.currentTasks + b.assigned;
-//           if (totalA !== totalB) return totalA - totalB;
-//           return Math.random() - 0.5;
-//         });
-
-//       for (const u of eligibleUnits) {
-//         if (taskIndex >= unassignedTasks.length) break;
-
-//         const task = unassignedTasks[taskIndex];
-//         task.unit = u.unit._id;
-//         await task.save();
-//         u.unit.tasks.push(task._id);
-//         u.assigned++;
-//         taskIndex++;
-//         assignedInRound = true;
-//       }
-//     }
-
-//     for (const u of unitInfos) {
-//       if (u.assigned > 0) await u.unit.save();
-//     }
-
-//     const assignmentLog = unitInfos
-//       .filter((u) => u.assigned > 0)
-//       .map((u) => ({
-//         enhet: u.unit.name,
-//         tilldeladeUppgifter: u.assigned,
-//         totaltEfter: u.currentTasks + u.assigned,
-//         maxTillåtna: u.maxTasks,
-//       }));
-
-//     const responseData = {
-//       message: "Uppgifter tilldelades tills inga fler kunde delas ut.",
-//       totaltTilldelade: taskIndex,
-//       fördelning: assignmentLog,
-//     };
-
-//     if (res) {
-//       return res.status(200).json(responseData);
-//     } else {
-//       console.log("[CRON]:", responseData);
-//     }
-//   } catch (error) {
-//     console.error("Fel vid uppgiftsfördelning:", error);
-//     if (res) {
-//       return res
-//         .status(500)
-//         .json({ message: "Internt serverfel vid uppgiftsfördelning" });
-//     }
-//   }
-// };

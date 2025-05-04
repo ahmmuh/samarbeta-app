@@ -1,6 +1,6 @@
 import Apartment from "../models/apartment.js";
 import Settings from "../models/settings.js";
-import { Unit } from "../models/unit.js";
+import Unit from "../models/unit.js";
 
 export const getAllApartments = async (req, res) => {
   try {

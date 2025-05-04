@@ -1,19 +1,71 @@
 import Specialist from "../models/specialist.js";
 import Task from "../models/task.js";
-import { Unit } from "../models/unit.js";
+import Unit from "../models/unit.js";
+
+// export const getAllUnits = async (req, res) => {
+//   try {
+//     const units = await Unit.find()
+//       .populate("tasks")
+//       .populate("specialister")
+//       .populate("chef")
+//       .populate("workPlaces")
+//       .populate("apartments");
+
+//     res.json(units);
+//   } catch (error) {
+//     res.status(500).json({ Message: "Internal Server Error" });
+//   }
+// };
+
+// export const getUnitByID = async (req, res) => {
+//   try {
+//     const { unitId } = req.params;
+//     const unit = await Unit.findById(unitId)
+//       .populate("tasks")
+//       .populate("specialister")
+//       .populate("chef")
+//       .populate("workPlaces")
+//       .populate("apartments");
+
+//     if (!unit) {
+//       return res.status(404).json({ message: "Enheten hittades inte" });
+//     }
+//     res.status(200).json(unit);
+//   } catch (error) {
+//     console.error("Fel vid hämtning av enhet ", error.message);
+//     res.status(500).json({ message: "Serverfel" });
+//   }
+// };
 
 export const getAllUnits = async (req, res) => {
   try {
+    // Hämta alla enheter först
     const units = await Unit.find()
-      .populate("tasks")
       .populate("specialister")
       .populate("chef")
       .populate("workPlaces")
       .populate("apartments");
 
-    res.json(units);
+    // Hämta alla tasks och gruppera dem efter unit
+    const tasks = await Task.find({
+      unit: { $in: units.map((unit) => unit._id) },
+    });
+
+    // Mappa tasks till respektive enhet
+    const unitsWithTasks = units.map((unit) => {
+      const unitTasks = tasks.filter(
+        (task) => task.unit && task.unit.toString() === unit._id.toString()
+      );
+      return {
+        ...unit.toObject(),
+        tasks: unitTasks,
+      };
+    });
+
+    res.json(unitsWithTasks);
   } catch (error) {
-    res.status(500).json({ Message: "Internal Server Error" });
+    console.error("Fel vid hämtning av enheter:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
@@ -21,7 +73,6 @@ export const getUnitByID = async (req, res) => {
   try {
     const { unitId } = req.params;
     const unit = await Unit.findById(unitId)
-      .populate("tasks")
       .populate("specialister")
       .populate("chef")
       .populate("workPlaces")
@@ -30,9 +81,18 @@ export const getUnitByID = async (req, res) => {
     if (!unit) {
       return res.status(404).json({ message: "Enheten hittades inte" });
     }
-    res.status(200).json(unit);
+
+    // Hämta alla tasks för denna enhet
+    const tasks = await Task.find({ unit: unitId });
+
+    const unitWithTasks = {
+      ...unit.toObject(),
+      tasks: tasks,
+    };
+
+    res.status(200).json(unitWithTasks);
   } catch (error) {
-    console.error("Fel vid hämtning av enhet ", error.message);
+    console.error("Fel vid hämtning av enhet:", error);
     res.status(500).json({ message: "Serverfel" });
   }
 };

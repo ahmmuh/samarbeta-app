@@ -13,8 +13,9 @@ import keyRoute from "./routes/keyRoute.js";
 import userRouter from "./routes/userRoute.js";
 import keyLogRoute from "./routes/keyLogsRoute.js";
 import apartmentRoute from "./routes/apartmentRoute.js";
-import { autoAssignMorningTasks } from "./controllers/CronController.js";
+import { autoAssignTasks } from "./controllers/CronController.js";
 import cronJobRoute from "./routes/cronJobRoute.js";
+import qrCodeRoute from "./routes/qrCodeROute.js";
 const app = express();
 const port = 8000;
 
@@ -38,14 +39,7 @@ app.use("/api", keyRoute);
 app.use("/api", keyLogRoute);
 app.use("/api", apartmentRoute);
 app.use("/api/cronjobs", cronJobRoute);
-// Optional logging middleware (can be uncommented for debugging)
-// app.use((req, res, next) => {
-//   console.log("Incoming request method:", req.method); // Log the HTTP method
-//   console.log("Incoming request URL:", req.url); // Log the request URL
-//   console.log("Incoming request headers:", req.headers); // Log the request headers
-//   console.log("Incoming request body:", req.body); // Log the request body
-// next(); // Pass control to the next middleware or route handler
-// });
+app.use("/api", qrCodeRoute);
 app.listen(port, () => {
   console.log(`The Server listening on port ${port}`);
   getConnection();

@@ -1,14 +1,14 @@
 import express from "express";
 import cron from "node-cron";
-import { autoAssignMorningTasks } from "../controllers/CronController.js";
+import { autoAssignTasks } from "../controllers/CronController.js";
 
 const cronJobRoute = express.Router();
 
-cronJobRoute.patch("/tasks/auto-assign", autoAssignMorningTasks);
+cronJobRoute.patch("/tasks/auto-assign", autoAssignTasks);
 
-cron.schedule("** * * * *", async () => {
-  console.log("⏰ [CRON] Kör autoAssignMorningTasks...");
-  await autoAssignMorningTasks();
-});
+// cron.schedule("*/10 * * * * *", async () => {
+//   console.log("⏰ [CRON] Running autoAssignTasks every 10 seconds...");
+//   await autoAssignTasks();
+// });
 
 export default cronJobRoute;

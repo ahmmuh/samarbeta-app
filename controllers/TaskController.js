@@ -1,7 +1,29 @@
 // get alla taskska via unit
 
 import Task from "../models/task.js";
-import { Unit } from "../models/unit.js";
+import Unit from "../models/unit.js";
+
+//Add task to task list (utan enhet)
+
+export const addTask = async (req, res) => {
+  const { title, description, location } = req.body;
+  if (!title || !description || !location) {
+    return res.status(400).json({
+      message:
+        "Det saknas en eller fler av följande: title, description, location",
+    });
+  }
+  try {
+    const newTask = new Task({ title, description, location });
+    await newTask.save();
+    console.log("NEW TASK", newTask);
+    return res.status(200).json(newTask);
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Serverfel vid skapande av ny task utan enhet" });
+  }
+};
 
 //Ny task (EJ UPDATE)
 export const addTaskToUnit = async (req, res) => {
@@ -66,7 +88,9 @@ export const assignTaskToUnit = async (req, res) => {
 export const getAllTasksByUnits = async (req, res) => {
   try {
     const { unitId } = req.params;
-    const tasks = await Unit.findById(unitId).populate("tasks");
+    const tasks = await Unit.findById(unitId)
+      .populate("tasks")
+      .sort({ completed: "Ej påbörjat" });
     return res.status(200).json(tasks);
   } catch (error) {
     console.log("Error", error.message);

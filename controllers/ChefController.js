@@ -1,7 +1,7 @@
 //get Alla Chefer via unit
 
 import Chef from "../models/chef.js";
-import { Unit } from "../models/unit.js";
+import Unit from "../models/unit.js";
 
 export const addChefToUnit = async (req, res) => {
   try {
