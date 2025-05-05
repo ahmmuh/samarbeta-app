@@ -6,9 +6,9 @@ const cronJobRoute = express.Router();
 
 cronJobRoute.patch("/tasks/auto-assign", autoAssignTasks);
 
-// cron.schedule("*/10 * * * * *", async () => {
-//   console.log("⏰ [CRON] Running autoAssignTasks every 10 seconds...");
-//   await autoAssignTasks();
+// Kör varje minut
+// cron.schedule("* * * * *", async () => {
+//   console.log("🕐 Kör autoAssignTasks...");
+//   await autoAssignTasks(); // req och res är null, vilket du hanterar i funktionen
 // });
-
 export default cronJobRoute;
