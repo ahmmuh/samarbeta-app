@@ -43,7 +43,7 @@ export const registerNewKey = async (req, res) => {
   try {
     const existingKey = await KeyModel.findOne({ keyLabel });
     if (existingKey) {
-      return res.status(409).json({ message: "Nyckel finns redan" });
+      return res.status(400).json({ message: "Nyckel finns redan" });
     }
 
     // 1. Spara nyckeln först
