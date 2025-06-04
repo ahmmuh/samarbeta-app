@@ -20,7 +20,12 @@ import qrCodeRoute from "./routes/qrCodeROute.js";
 import authRoute from "./routes/authRoute.js";
 import { getToken } from "./middleware/authMiddleware.js";
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 const port = 8000;
 
 app.use(express.json());

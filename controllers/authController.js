@@ -40,6 +40,7 @@ export const signUp = async (req, res, next) => {
 
 export const signIn = async (req, res, next) => {
   const { username, password } = req.body;
+  console.log("LOGIN FUNCTION KÖRS", req.body);
   const user = await User.findOne({ username });
   if (!user) return res.status(400).json({ message: "Invalid Credentials" });
 
@@ -57,10 +58,14 @@ export const signIn = async (req, res, next) => {
 
   res.cookie("token", token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "Strict",
+    secure: false,
+    sameSite: "Lax",
     maxAge: 1000 * 60 * 60,
   });
+
+  console.log("TOKEN", token);
+
+  res.json({ message: "Login success" });
 };
 
 export const getCurrentUser = async (req, res) => {
@@ -87,12 +92,3 @@ export const getCurrentUser = async (req, res) => {
 };
 
 //Logout
-
-export const logout = (req, res) => {
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "Strict",
-  });
-  return res.status(200).json({ message: "Logged out successfully" });
-};

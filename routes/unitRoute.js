@@ -9,6 +9,15 @@ import {
 
 const unitRouter = express.Router();
 
+// I början av unitRoute.js
+console.log("unitRoute is being loaded");
+
+// Inuti en route:
+unitRouter.get("/", (req, res) => {
+  console.log("GET /api/unit körs");
+  res.json({ message: "Units OK" });
+});
+
 //enheter
 
 unitRouter.get("/units", getAllUnits);
