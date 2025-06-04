@@ -2,15 +2,37 @@ import mongoose from "mongoose";
 
 export const userSchema = new mongoose.Schema(
   {
-    name: String,
-    phone: String,
-    email: String,
-    keys: [{ type: mongoose.Schema.Types.ObjectId, ref: "KeyModel" }],
-    userType: {
+    name: {
       type: String,
-      enum: ["chefer", "specialister"],
       required: true,
     },
+
+    email: {
+      type: String,
+      unique: true,
+      required: true,
+    },
+    phone: {
+      type: Number,
+      unique: true,
+    },
+
+    username: {
+      type: String,
+      unique: true,
+      required: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+
+    keys: [{ type: mongoose.Schema.Types.ObjectId, ref: "KeyModel" }],
+    // userType: {
+    //   type: String,
+    //   enum: ["chefer", "specialister"],
+    //   required: true,
+    // },
   },
 
   { timestamps: true }

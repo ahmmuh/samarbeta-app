@@ -181,19 +181,19 @@ export const getTaskStatuses = async (req, res) => {
 };
 
 export const deleteTask = async (req, res) => {
-  const { taskId, unitId } = req.params;
-  try {
-    const unit = await Unit.findById(unitId).populate("tasks");
-    if (!unit) return res.status(400).json({ message: "Enhet hittades inte" });
+  const { taskId } = req.params;
 
-    const updatedTasks = unit.tasks.filter((t) => t._id.toString() !== taskId);
-    unit.tasks = updatedTasks;
-    await unit.save();
+  try {
+    const deletedTask = await Task.findByIdAndDelete(taskId);
+    if (!deletedTask) {
+      return res.status(404).json({ message: "Task hittades inte" });
+    }
+
     return res
       .status(200)
-      .json({ message: "Deleted task", tasks: updatedTasks });
+      .json({ message: "Task borttagen", task: deletedTask });
   } catch (error) {
-    console.log("Error", error.message);
-    return res.status(500).json({ message: "Internal server error", error });
+    console.error("Error:", error.message);
+    return res.status(500).json({ message: "Serverfel", error: error.message });
   }
 };

@@ -24,7 +24,7 @@ taskRoute.get("/tasks/:taskId", getTaskById);
 
 taskRoute.get("/units/:unitId/tasks", getAllTasksByUnits);
 // taskRoute.get("/units/:unitId/tasks/:taskId", getTask);
-taskRoute.delete("/tasks/:taskId", deleteTask);
+// taskRoute.delete("/tasks/:taskId", deleteTask);
 taskRoute.get("/units/:unitId/tasks/statuses", getTaskStatuses);
 taskRoute.patch("/units/:unitId/tasks/:taskId/assign", assignTaskToUnit);
 
