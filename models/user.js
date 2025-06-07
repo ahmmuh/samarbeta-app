@@ -1,42 +1,26 @@
 import mongoose from "mongoose";
 
-export const userSchema = new mongoose.Schema(
-  {
-    name: {
-      type: String,
-      required: true,
-    },
+const userSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, unique: true, required: true },
+  phone: { type: Number, unique: true },
+  username: { type: String, unique: true, required: true },
+  password: { type: String, required: true },
 
-    email: {
-      type: String,
-      unique: true,
-      required: true,
-    },
-    phone: {
-      type: Number,
-      unique: true,
-    },
-
-    username: {
-      type: String,
-      unique: true,
-      required: true,
-    },
-    password: {
-      type: String,
-      required: true,
-    },
-
-    keys: [{ type: mongoose.Schema.Types.ObjectId, ref: "KeyModel" }],
-    // userType: {
-    //   type: String,
-    //   enum: ["chefer", "specialister"],
-    //   required: true,
-    // },
+  role: {
+    type: String,
+    enum: ["Chef", "Specialist"],
+    required: true,
   },
 
-  { timestamps: true }
-);
+  unit: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Unit",
+    required: true,
+  },
+
+  keys: [{ type: mongoose.Schema.Types.ObjectId, ref: "KeyModel" }],
+});
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);
 

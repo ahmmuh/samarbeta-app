@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
 export const signUp = async (req, res, next) => {
-  const { name, email, phone, username, password } = req.body;
+  const { name, email, phone, username, password, role } = req.body;
 
   try {
     //Check Email
@@ -27,6 +27,7 @@ export const signUp = async (req, res, next) => {
       phone,
       username,
       password: hashedPassword,
+      role,
     });
 
     console.log("Ny ANvändare kommer att registrera:", user);

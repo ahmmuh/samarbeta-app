@@ -1,11 +1,8 @@
-import Chef from "../models/chef.js";
-import Specialist from "../models/specialist.js";
 import User from "../models/user.js";
 
 export const getAllUsers = async (req, res) => {
   try {
     const users = await User.find();
-    const chefer = await Chef.find();
     const specialister = await Specialist.find();
     const allUsers = [...users, ...chefer, ...specialister];
     if (allUsers.length === 0) {

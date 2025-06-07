@@ -2,30 +2,6 @@ import Apartment from "../models/apartment.js";
 import Settings from "../models/settings.js";
 import Unit from "../models/unit.js";
 
-export const getAllApartments = async (req, res) => {
-  try {
-    const apartments = await Apartment.find().populate("assignedUnit");
-    res.json(apartments);
-  } catch (error) {
-    res.status(500).json({ Message: "Internal Server Error" });
-  }
-};
-
-export const getApartmentByID = async (req, res) => {
-  try {
-    const { apartmentId } = req.params;
-    const apartment = await Apartment.findById(apartmentId);
-
-    if (!apartment) {
-      return res.status(404).json({ message: "Apartment hittades inte" });
-    }
-    res.status(200).json(apartment);
-  } catch (error) {
-    console.error("Fel vid hämtning av apartment ", error.message);
-    res.status(500).json({ message: "Serverfel" });
-  }
-};
-
 export const createApartment = async (req, res) => {
   console.log("Hela Begäran: ", req.body);
   const {
@@ -69,6 +45,31 @@ export const createApartment = async (req, res) => {
     res.status(201).json(newApartment);
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const getAllApartments = async (req, res) => {
+  console.log("🔐 req.user i getAllApartments:", req.user); // 👈 logga detta
+  try {
+    const apartments = await Apartment.find().populate("assignedUnit");
+    res.json(apartments);
+  } catch (error) {
+    res.status(500).json({ Message: "Internal Server Error" });
+  }
+};
+
+export const getApartmentByID = async (req, res) => {
+  try {
+    const { apartmentId } = req.params;
+    const apartment = await Apartment.findById(apartmentId);
+
+    if (!apartment) {
+      return res.status(404).json({ message: "Apartment hittades inte" });
+    }
+    res.status(200).json(apartment);
+  } catch (error) {
+    console.error("Fel vid hämtning av apartment ", error.message);
+    res.status(500).json({ message: "Serverfel" });
   }
 };
 

@@ -1,8 +1,6 @@
-import Chef from "../models/chef.js";
 import KeyModel from "../models/key.js";
 import KeyLog from "../models/keyLog.js";
 import User from "../models/user.js";
-import Specialist from "../models/specialist.js";
 import mongoose from "mongoose";
 
 //Hämta alla nycklar

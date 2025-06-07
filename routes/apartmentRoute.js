@@ -6,6 +6,7 @@ import {
   getApartmentByID,
   updateApartment,
 } from "../controllers/ApartmentController.js";
+import { getToken } from "../middleware/authMiddleware.js";
 
 const apartmentRoute = express.Router();
 

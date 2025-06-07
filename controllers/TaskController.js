@@ -2,11 +2,22 @@
 
 import Task from "../models/task.js";
 import Unit from "../models/unit.js";
+import User from "../models/user.js";
 
 //Add task to task list (utan enhet)
-
 export const addTask = async (req, res) => {
+  const userId = req.user._id;
+
+  const user = await User.findById(userId);
+
+  console.log("Logged användare - i addTask()", user);
+
+  if (!user || !user.unit) {
+    return res.status(400).json({ message: "Användaren saknar enhet" });
+  }
+
   const { title, description, location } = req.body;
+
   if (!title || !description || !location) {
     return res.status(400).json({
       message:
@@ -14,7 +25,13 @@ export const addTask = async (req, res) => {
     });
   }
   try {
-    const newTask = new Task({ title, description, location });
+    const newTask = new Task({
+      title,
+      description,
+      location,
+      unit: user.unit,
+      createdBy: user._id,
+    });
     await newTask.save();
     console.log("NEW TASK", newTask);
     return res.status(200).json(newTask);
@@ -30,7 +47,7 @@ export const addTaskToUnit = async (req, res) => {
   const { unitId } = req.params;
 
   try {
-    const { title, description, location, completed } = req.body;
+    const { title, description, location, status } = req.body;
     console.log("Tasks from body", req.body);
 
     const unit = await Unit.findById(unitId);
@@ -39,8 +56,8 @@ export const addTaskToUnit = async (req, res) => {
         .status(400)
         .json({ message: "Enheten finns inte i databasen!" });
     console.log("unitId", unitId);
-    const newTask = new Task({ title, description, location, completed });
-    console.log("The new task with COMPLETED FUNCTION", newTask);
+    const newTask = new Task({ title, description, location, status });
+    console.log("The new task with status FUNCTION", newTask);
     await newTask.save();
     unit.tasks.push(newTask._id);
     console.log("New task", unit);
@@ -55,7 +72,7 @@ export const addTaskToUnit = async (req, res) => {
 export const assignTaskToUnit = async (req, res) => {
   try {
     const { taskId, unitId } = req.params;
-    const { completed } = req.body;
+    const { status } = req.body;
     const unit = await Unit.findById(unitId);
     if (!unit)
       return res.status(404).json({
@@ -68,8 +85,8 @@ export const assignTaskToUnit = async (req, res) => {
     }
     task.unit = unitId;
 
-    if (completed) {
-      task.completed = completed;
+    if (status) {
+      task.status = status;
     }
     unit.tasks.push(task);
     await unit.save();
@@ -85,34 +102,9 @@ export const assignTaskToUnit = async (req, res) => {
   }
 };
 
-export const getAllTasksByUnits = async (req, res) => {
-  try {
-    const { unitId } = req.params;
-    const tasks = await Unit.findById(unitId)
-      .populate("tasks")
-      .sort({ completed: "Ej påbörjat" });
-    return res.status(200).json(tasks);
-  } catch (error) {
-    console.log("Error", error.message);
-    return res.status(500).json({ message: "Internal Server Error", error });
-  }
-};
-
 export const getAllTasks = async (req, res) => {
-  // await Task.updateMany({}, [
-  //   {
-  //     $set: {
-  //       createdAt: "$skapats",
-  //       updatedAt: "$Uppdaterats",
-  //     },
-  //   },
-  //   {
-  //     $unset: ["skapats", "Uppdaterats"],
-  //   },
-  // ]);
-
   try {
-    const tasks = await Task.find().populate("unit");
+    const tasks = await Task.find();
     return res.status(200).json(tasks);
   } catch (error) {
     console.log("Error", error.message);
@@ -159,27 +151,6 @@ export const getTaskById = async (req, res) => {
   }
 };
 
-export const getTaskStatuses = async (req, res) => {
-  const { unitId } = req.params;
-  console.log("UNIT ID in getTaskStatuses");
-  try {
-    const unit = await Unit.findById(unitId).populate("tasks");
-    if (!unit) {
-      return res.status(404).json({ message: "Enheten hittades inte" });
-    }
-
-    const statuses = [...new Set(unit.tasks.map((task) => task.completed))];
-
-    if (statuses.length === 0) {
-      return res.status(404).json({ message: "Ingen statusar hittades" });
-    }
-    res.status(200).json(statuses);
-  } catch (error) {
-    console.warn(`Error Message: ${error.message}`);
-    res.status(500).json({ message: "Serverfel", error: error.message });
-  }
-};
-
 export const deleteTask = async (req, res) => {
   const { taskId } = req.params;
 
@@ -197,3 +168,18 @@ export const deleteTask = async (req, res) => {
     return res.status(500).json({ message: "Serverfel", error: error.message });
   }
 };
+
+///Kolla på det sen
+
+// export const getAllTasksByUnits = async (req, res) => {
+//   try {
+//     const { unitId } = req.params;
+//     const tasks = await Unit.findById(unitId)
+//       .populate("tasks")
+//       .sort({ status: "Ej påbörjat" });
+//     return res.status(200).json(tasks);
+//   } catch (error) {
+//     console.log("Error", error.message);
+//     return res.status(500).json({ message: "Internal Server Error", error });
+//   }
+// };
