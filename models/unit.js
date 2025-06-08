@@ -20,8 +20,9 @@ const unitSchema = new mongoose.Schema(
     },
     users: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // 👈 N
     tasks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Task" }],
-    workplaces: [{ type: mongoose.Schema.Types.ObjectId, ref: "WorkPlace" }],
+    workPlaces: [{ type: mongoose.Schema.Types.ObjectId, ref: "WorkPlace" }],
     apartments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Apartment" }],
+    keys: [{ type: mongoose.Schema.Types.ObjectId, ref: "KeyModel" }],
   },
   {
     timestamps: true,

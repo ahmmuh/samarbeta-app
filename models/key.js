@@ -5,7 +5,7 @@ const keySchema = new mongoose.Schema(
     keyLabel: { type: String, unique: true, required: true },
     location: String,
     qrCode: String, // base64 QR-kod
-
+    unit: { type: mongoose.Schema.Types.ObjectId, ref: "Unit" },
     status: {
       type: String,
       enum: ["available", "checked-out", "returned"],

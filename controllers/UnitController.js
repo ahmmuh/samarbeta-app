@@ -10,11 +10,10 @@ import User from "../models/user.js";
 export const createUnit = async (req, res) => {
   console.log("Hela Begäran: ", req.body);
   const { name, address } = req.body;
-  await KeyModel.deleteMany();
-  await KeyLog.deleteMany();
   if (!name || !address) {
     return res.status(400).json({ message: "Namn och adress krävs." });
   }
+
   try {
     const [lng, lat] = await geocodeAddress(address);
     const newUnit = new Unit({
@@ -25,7 +24,7 @@ export const createUnit = async (req, res) => {
         coordinates: [lng, lat],
       },
     });
-    // await newUnit.save();
+    await newUnit.save();
     console.log("New Unit:", newUnit);
     res.status(201).json(newUnit);
   } catch (error) {
@@ -42,7 +41,8 @@ export const getAllUnits = async (req, res) => {
     const units = await Unit.find()
       .populate("apartments")
       .populate("tasks")
-      .populate("users");
+      .populate("users")
+      .populate("keys");
 
     // Hämta alla tasks och gruppera dem efter unit
 

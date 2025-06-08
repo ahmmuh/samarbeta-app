@@ -49,9 +49,9 @@ export const createApartment = async (req, res) => {
 };
 
 export const getAllApartments = async (req, res) => {
-  console.log("🔐 req.user i getAllApartments:", req.user); // 👈 logga detta
+  // console.log("🔐 req.user i getAllApartments:", req.user); // 👈 logga detta
   try {
-    const apartments = await Apartment.find().populate("assignedUnit");
+    const apartments = await Apartment.find().populate("assignedUnit", "name");
     res.json(apartments);
   } catch (error) {
     res.status(500).json({ Message: "Internal Server Error" });

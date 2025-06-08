@@ -7,6 +7,7 @@ import {
   getKeyById,
   updateKey,
 } from "../controllers/KeyController.js";
+import { getToken } from "../middleware/authMiddleware.js";
 
 const keyRoute = express.Router();
 

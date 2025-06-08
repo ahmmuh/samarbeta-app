@@ -11,7 +11,7 @@ import { getToken } from "../middleware/authMiddleware.js";
 const taskRoute = express.Router();
 
 //Tasks
-taskRoute.post("/tasks", getToken, addTask);
+taskRoute.post("/tasks", addTask);
 taskRoute.get("/tasks", getAllTasks);
 taskRoute.patch("/tasks/:taskId", updateTask);
 taskRoute.delete("/tasks/:taskId", deleteTask);

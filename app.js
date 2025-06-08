@@ -7,9 +7,9 @@ import getConnection from "./db/connection.js";
 import unitRouter from "./routes/unitRoute.js";
 import taskRoute from "./routes/taskRoute.js";
 // import workplaceRoute from "./routes/workplaceRoute.js";
-// import googlePlaceRoute from "./routes/googlePlaceRoute.js";
+import googlePlaceRoute from "./routes/googlePlaceRoute.js";
 import keyRoute from "./routes/keyRoute.js";
-// import userRouter from "./routes/userRoute.js";
+import userRouter from "./routes/userRoute.js";
 import keyLogRoute from "./routes/keyLogsRoute.js";
 import apartmentRoute from "./routes/apartmentRoute.js";
 // import { autoAssignTasks } from "./controllers/CronController.js";
@@ -31,16 +31,16 @@ app.use(express.json());
 app.use(cookieParser());
 
 // app.use("/api", addressRoute);
-app.use("/api", authRoute);
 app.use("/api", apartmentRoute);
-// app.use("/api", getToken, userRouter);
+app.use("/api", userRouter);
 app.use("/api", unitRouter);
 app.use("/api", taskRoute);
-// app.use("/api", googlePlaceRoute);
+app.use("/api", googlePlaceRoute);
 // app.use("/api", getToken, workplaceRoute);
 app.use("/api", qrCodeRoute);
 app.use("/api", keyRoute);
 app.use("/api", keyLogRoute);
+app.use("/api", authRoute);
 
 // app.use("/api/cronjobs", cronJobRoute);
 app.listen(port, () => {

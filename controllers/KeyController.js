@@ -7,8 +7,7 @@ import mongoose from "mongoose";
 
 export const getAllKeys = async (req, res) => {
   try {
-    // console.log("Alla modells", mongoose.models);
-    const keys = await KeyModel.find().populate("borrowedBy");
+    const keys = await KeyModel.find().populate("unit");
     console.log("Alla nycklar med borrowedBy:", keys);
     if (keys.length === 0) {
       return res
