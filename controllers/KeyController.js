@@ -1,5 +1,6 @@
 import KeyModel from "../models/key.js";
 import KeyLog from "../models/keyLog.js";
+import Unit from "../models/unit.js";
 import User from "../models/user.js";
 import mongoose from "mongoose";
 
@@ -7,7 +8,7 @@ import mongoose from "mongoose";
 
 export const getAllKeys = async (req, res) => {
   try {
-    const keys = await KeyModel.find().populate("unit");
+    const keys = await KeyModel.find().populate("unit", "name");
     console.log("Alla nycklar med borrowedBy:", keys);
     if (keys.length === 0) {
       return res
@@ -322,10 +323,13 @@ export const getKeyById = async (req, res) => {
 //Lägga till bara nycklar, ingen användare
 
 export const addNewKey = async (req, res) => {
-  const { keyLabel, location } = req.body;
+  const { keyLabel, location, unit: unitId } = req.body;
   // console.log("Inkommande data:", req.body);
 
   try {
+    const unit = await Unit.findById(unitId);
+    if (!unit)
+      return res.status(404).json({ messsage: "Enheten hittades inte" });
     // Om nyckel finns redan i systemet
     const existKey = await KeyModel.findOne({ keyLabel });
 
@@ -337,16 +341,30 @@ export const addNewKey = async (req, res) => {
 
     //skapa en ny nyckel
 
-    if (!keyLabel || !location) {
+    if (!keyLabel || !location || !unitId) {
       return res
         .status(400)
-        .json({ message: "keyLabel eller location saknas" });
+        .json({ message: "keyLabel eller location eller unitID saknas" });
     }
-    const newKey = new KeyModel({ keyLabel, location });
+    const newKey = new KeyModel({
+      keyLabel,
+      location,
+      unit: unitId,
+    });
 
     await newKey.save();
-    console.log("NEW Key", newKey);
-    return res.status(201).json({ message: "En ny nyckel har lagts", newKey });
+
+    unit.keys.push(newKey._id);
+    await unit.save();
+
+    const populatedKey = await KeyModel.findById(newKey._id).populate(
+      "unit",
+      "name"
+    );
+    console.log("NEW skapad Key", populatedKey);
+    return res
+      .status(201)
+      .json({ message: "En ny nyckel har lagts", newKey: populatedKey });
   } catch (error) {
     console.error("Error vid skapande av ny nyckel", error);
     return res.status(500).json({
