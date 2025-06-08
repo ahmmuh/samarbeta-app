@@ -2,21 +2,9 @@ import User from "../models/user.js";
 
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find();
-    const specialister = await Specialist.find();
-    const allUsers = [...users, ...chefer, ...specialister];
-    if (allUsers.length === 0) {
-      return res
-        .status(400)
-        .json({ message: "Det finns inga användare att visa" });
-    }
+    const users = await User.find().select("-password");
 
-    console.log(
-      "Hämtade användare, kan bestå av chefer och specialister",
-      allUsers
-    );
-
-    return res.status(200).json(allUsers);
+    return res.status(200).json(users);
   } catch (error) {
     console.error(error);
     res.status(500).json({

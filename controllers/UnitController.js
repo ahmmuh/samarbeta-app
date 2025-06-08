@@ -41,7 +41,10 @@ export const getAllUnits = async (req, res) => {
     const units = await Unit.find()
       .populate("apartments")
       .populate("tasks")
-      .populate("users")
+      .populate({
+        path: "users",
+        select: "-password",
+      })
       .populate("keys");
 
     // Hämta alla tasks och gruppera dem efter unit

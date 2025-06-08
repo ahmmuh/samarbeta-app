@@ -2,11 +2,16 @@ import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import Unit from "../models/unit.js";
 
 export const signUp = async (req, res, next) => {
-  const { name, email, phone, username, password, role } = req.body;
+  const { name, email, phone, username, password, role, unitId } = req.body;
 
   try {
+    const unit = await Unit.findById(unitId);
+    if (!unit) {
+      return res.status(404).json({ message: "Enheten hittades inte" });
+    }
     //Check Email
     const existingEmail = await User.findOne({ email });
     if (existingEmail)
@@ -28,10 +33,13 @@ export const signUp = async (req, res, next) => {
       username,
       password: hashedPassword,
       role,
+      unit: unitId,
     });
 
     console.log("Ny ANvändare kommer att registrera:", user);
     await user.save();
+    unit.users.push(user._id);
+    unit.save();
     res.status(201).json({ message: "User created" });
   } catch (error) {
     console.error("Fel vid skapande av användare:", error); // Lägg till denna rad
