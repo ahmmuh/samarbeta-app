@@ -1,6 +1,3 @@
-//get Alla specialist via unit
-
-import Specialist from "../models/specialist.js";
 import Unit from "../models/unit.js";
 import WorkPlace from "../models/workPlace.js";
 
@@ -137,14 +134,14 @@ export const deleteWorkplace = async (req, res) => {
     const unit = await Unit.findById(unitId).populate("workplaces");
     if (!unit) return res.status(400).json({ message: "Enhet hittades inte" });
 
-    const updatedWorkplace = unit.workPlaces.filter(
+    const deletedWorkplace = unit.workPlaces.filter(
       (t) => t._id.toString() !== workplaceId
     );
-    unit.workPlaces = updatedWorkplace;
+    unit.workPlaces = deletedWorkplace;
     await unit.save();
     return res
       .status(200)
-      .json({ message: "Deleted specialist", workplace: updatedWorkplace });
+      .json({ message: "Deleted workplace", workplace: deletedWorkplace });
   } catch (error) {
     console.log("Error", error.message);
     return res.status(500).json({ message: "Internal server error", error });

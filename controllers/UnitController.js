@@ -36,16 +36,18 @@ export const createUnit = async (req, res) => {
 };
 
 export const getAllUnits = async (req, res) => {
+  console.log("Called getToken när jag använder api/units");
+  console.log("Token i cookies: api/units", req.cookies.token);
   try {
     // Hämta alla enheter först
     const units = await Unit.find()
       .populate("apartments")
+      .populate("keys")
       .populate("tasks")
       .populate({
         path: "users",
         select: "-password",
-      })
-      .populate("keys");
+      });
 
     // Hämta alla tasks och gruppera dem efter unit
 

@@ -18,6 +18,7 @@ import qrCodeRoute from "./routes/qrCodeROute.js";
 import authRoute from "./routes/authRoute.js";
 import { getToken } from "./middleware/authMiddleware.js";
 import addressRoute from "./routes/addressRoute.js";
+import workplaceRoute from "./routes/workplaceRoute.js";
 const app = express();
 app.use(
   cors({
@@ -29,18 +30,18 @@ const port = 8000;
 
 app.use(express.json());
 app.use(cookieParser());
+app.use("/api", authRoute);
 
 // app.use("/api", addressRoute);
-app.use("/api", apartmentRoute);
-app.use("/api", userRouter);
-app.use("/api", unitRouter);
-app.use("/api", taskRoute);
-app.use("/api", googlePlaceRoute);
-// app.use("/api", getToken, workplaceRoute);
-app.use("/api", qrCodeRoute);
-app.use("/api", keyRoute);
-app.use("/api", keyLogRoute);
-app.use("/api", authRoute);
+app.use("/api", getToken, apartmentRoute);
+app.use("/api", getToken, userRouter);
+app.use("/api", getToken, unitRouter);
+app.use("/api", getToken, taskRoute);
+app.use("/api", getToken, googlePlaceRoute);
+app.use("/api", getToken, workplaceRoute);
+app.use("/api", getToken, qrCodeRoute);
+app.use("/api", getToken, keyRoute);
+app.use("/api", getToken, keyLogRoute);
 
 // app.use("/api/cronjobs", cronJobRoute);
 app.listen(port, () => {

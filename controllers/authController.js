@@ -48,33 +48,41 @@ export const signUp = async (req, res, next) => {
 };
 
 export const signIn = async (req, res, next) => {
-  const { username, password } = req.body;
-  console.log("LOGIN FUNCTION KÖRS", req.body);
-  const user = await User.findOne({ username });
-  if (!user) return res.status(400).json({ message: "Invalid Credentials" });
+  try {
+    const { username, password } = req.body;
+    console.log("LOGIN FUNCTION KÖRS", req.body);
 
-  const isMatch = await bcrypt.compare(password, user.password);
+    const user = await User.findOne({ username }).populate("unit");
+    if (!user) return res.status(400).json({ message: "Invalid Credentials" });
 
-  if (!isMatch) return res.status(400).json({ message: "Invalid Credentials" });
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch)
+      return res.status(400).json({ message: "Invalid Credentials" });
 
-  const token = await jwt.sign(
-    { _id: user._id, username: user.username },
-    process.env.JWT_SECRET,
-    {
-      expiresIn: "1h",
-    }
-  );
+    const token = jwt.sign(
+      {
+        _id: user._id,
+        username: user.username,
+        role: user.role,
+        unitId: user.unit?._id,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
 
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: false,
-    sameSite: "Lax",
-    maxAge: 1000 * 60 * 60,
-  });
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Lax",
+      maxAge: 1000 * 60 * 60,
+    });
 
-  console.log("TOKEN", token);
+    console.log("TOKEN", token);
 
-  res.json({ message: "Login success" });
+    res.json({ token, user });
+  } catch (err) {
+    next(err); // Passes error to Express error handler
+  }
 };
 
 export const getCurrentUser = async (req, res) => {

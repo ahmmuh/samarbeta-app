@@ -103,6 +103,8 @@ export const assignTaskToUnit = async (req, res) => {
 };
 
 export const getAllTasks = async (req, res) => {
+  console.log("Called getToken när jag använder api/tasks");
+  console.log("Token i cookies: api/tasks", req.cookies.token);
   try {
     const tasks = await Task.find();
     return res.status(200).json(tasks);
