@@ -85,27 +85,47 @@ export const signIn = async (req, res, next) => {
   }
 };
 
+// export const getCurrentUser = async (req, res) => {
+//   const authHeader = req.headers.authorization;
+
+//   if (!authHeader || !authHeader.startsWith("Bearer")) {
+//     return res.status(401).json({ message: "Ingen token" });
+//   }
+//   const token = authHeader.split(" ")[1];
+
+//   if (!token) {
+//     return res.status(401).json({ message: "Token hittades ej" });
+//   }
+
+//   try {
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+//     const user = await User.findById(decoded._id).select("-password");
+//     res.json(user);
+//   } catch (error) {
+//     return res
+//       .status(500)
+//       .json({ message: "Serverfel vid hämtning av användarens info" });
+//   }
+// };
+
 export const getCurrentUser = async (req, res) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith("Bearer")) {
-    return res.status(401).json({ message: "Ingen token" });
-  }
-  const token = authHeader.split(" ")[1];
-
-  if (!token) {
-    return res.status(401).json({ message: "Token hittades ej" });
-  }
-
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded._id).select("-password");
+    // req.user sätts av getToken-middleware
+    const user = await User.findById(req.user._id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "Användare hittades inte" });
+    }
+
     res.json(user);
   } catch (error) {
-    return res
+    console.error("Fel vid hämtning av användare:", error);
+    res
       .status(500)
       .json({ message: "Serverfel vid hämtning av användarens info" });
   }
 };
 
 //Logout
+
+export const logout = (req, res) => {};

@@ -6,6 +6,7 @@ import {
   getUnitByID,
   updateUnit,
 } from "../controllers/UnitController.js";
+import { getToken } from "../middleware/authMiddleware.js";
 
 const unitRouter = express.Router();
 

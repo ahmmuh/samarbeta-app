@@ -5,8 +5,11 @@ import {
   displayBorrowedByUser,
 } from "../controllers/KeyController.js";
 import { getAllUsers, getUserById } from "../controllers/UserController.js";
+import { getToken } from "../middleware/authMiddleware.js";
+import { getCurrentUser } from "../controllers/authController.js";
 
 const userRouter = express.Router();
+
 
 userRouter.get("/users", getAllUsers);
 userRouter.get("/users/:userId", getUserById);

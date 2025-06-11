@@ -6,9 +6,9 @@ import {
   getTaskById,
   updateTask,
 } from "../controllers/TaskController.js";
+import { getToken } from "../middleware/authMiddleware.js";
 
 const taskRoute = express.Router();
-
 //Tasks
 taskRoute.post("/tasks", addTask);
 taskRoute.get("/tasks", getAllTasks);

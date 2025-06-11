@@ -5,6 +5,7 @@ import {
   getWorkPlace,
   updateWorkPlace,
 } from "../controllers/WorkplaceController.js";
+import { getToken } from "../middleware/authMiddleware.js";
 
 const workplaceRoute = express.Router();
 

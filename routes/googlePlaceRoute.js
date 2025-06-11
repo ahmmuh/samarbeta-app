@@ -3,8 +3,10 @@ import {
   getPlaceDetail,
   getPlaces,
 } from "../controllers/GooglePlaceController.js";
+import { getToken } from "../middleware/authMiddleware.js";
 
 const googlePlaceRoute = express.Router();
+
 
 googlePlaceRoute.get("/places", getPlaces);
 
