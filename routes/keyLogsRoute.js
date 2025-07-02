@@ -4,7 +4,6 @@ import { getToken } from "../middleware/authMiddleware.js";
 
 const keyLogRoute = express.Router();
 
-
-keyLogRoute.get("/logs", getAllKeyLogs);
+keyLogRoute.get("/logs", getToken, getAllKeyLogs);
 
 export default keyLogRoute;

@@ -11,14 +11,13 @@ import { getToken } from "../middleware/authMiddleware.js";
 
 const keyRoute = express.Router();
 
+keyRoute.post("/keys/add", getToken, addNewKey);
 
-keyRoute.post("/keys/add", addNewKey);
+keyRoute.get("/keys", getToken, getAllKeys);
+keyRoute.get("/keys/:keyId/:userId", getToken, getKey);
+keyRoute.get("/keys/:keyId", getToken, getKeyById);
 
-keyRoute.get("/keys", getAllKeys);
-keyRoute.get("/keys/:keyId/:userId", getKey);
-keyRoute.get("/keys/:keyId", getKeyById);
-
-keyRoute.patch("/keys/:keyId", updateKey);
-keyRoute.delete("/keys/:keyId", deleteKey);
+keyRoute.patch("/keys/:keyId", getToken, updateKey);
+keyRoute.delete("/keys/:keyId", getToken, deleteKey);
 
 export default keyRoute;

@@ -33,7 +33,6 @@ const port = 8000;
 app.use("/api", authRoute);
 
 // app.use("/api", addressRoute);
-app.use("/api", getToken);
 app.use("/api", apartmentRoute);
 app.use("/api", unitRouter);
 app.use("/api", taskRoute);

@@ -7,9 +7,8 @@ import { getToken } from "../middleware/authMiddleware.js";
 
 const qrCodeRoute = express.Router();
 
+qrCodeRoute.post("/keys/qrcode", getToken, registerNewKey);
 
-qrCodeRoute.post("/keys/qrcode", registerNewKey);
-
-qrCodeRoute.get("/keys/qrcodes", getKeysWithQRCode);
+qrCodeRoute.get("/keys/qrcodes", getToken, getKeysWithQRCode);
 
 export default qrCodeRoute;

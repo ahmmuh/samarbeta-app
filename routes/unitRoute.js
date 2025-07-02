@@ -10,10 +10,10 @@ import { getToken } from "../middleware/authMiddleware.js";
 
 const unitRouter = express.Router();
 
-unitRouter.get("/units", getAllUnits);
-unitRouter.get("/units/:unitId", getUnitByID);
-unitRouter.post("/units", createUnit);
-unitRouter.put("/units/:unitId", updateUnit);
-unitRouter.delete("/units/:unitId", deleteUnit);
+unitRouter.get("/units", getToken, getAllUnits);
+unitRouter.get("/units/:unitId", getToken, getUnitByID);
+unitRouter.post("/units", getToken, createUnit);
+unitRouter.put("/units/:unitId", getToken, updateUnit);
+unitRouter.delete("/units/:unitId", getToken, deleteUnit);
 
 export default unitRouter;
