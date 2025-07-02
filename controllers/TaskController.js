@@ -115,16 +115,23 @@ export const getAllTasks = async (req, res) => {
 };
 
 export const updateTask = async (req, res) => {
-  try {
-    const { taskId } = req.params;
+  const { taskId } = req.params;
 
+  console.log("Task ID i updateTask from backend", req.body);
+
+  if (!taskId) {
+    return res.status(400).json({ message: "taskId saknas" });
+  }
+
+  if (!req.body || Object.keys(req.body).length === 0) {
+    return res.status(400).json({ message: "Inga uppdateringar skickades" });
+  }
+
+  try {
     const task = await Task.findById(taskId);
+
     if (!task) {
       return res.status(404).json({ message: "Task finns inte" });
-    }
-
-    if (!req.body || Object.keys(req.body).length === 0) {
-      return res.status(400).json({ message: "Inga uppdateringar skickades" });
     }
 
     const updatedTask = await Task.findByIdAndUpdate(taskId, req.body, {
@@ -134,8 +141,10 @@ export const updateTask = async (req, res) => {
 
     return res.status(200).json(updatedTask);
   } catch (error) {
-    console.error("Error:", error.message);
-    return res.status(500).json({ message: "Internt serverfel", error });
+    console.error("Fel vid uppdatering av task:", error.message);
+    return res
+      .status(500)
+      .json({ message: "Internt serverfel", error: error.message });
   }
 };
 

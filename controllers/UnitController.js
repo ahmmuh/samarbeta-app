@@ -103,7 +103,10 @@ export const getUnitByID = async (req, res) => {
     const unit = await Unit.findById(unitId)
       .populate("tasks")
       .populate("apartments")
-      .populate("users");
+      .populate({
+        path: "users",
+        select: "-password",
+      });
 
     if (!unit) {
       return res.status(404).json({ message: "Enheten hittades inte" });
