@@ -72,7 +72,8 @@ export const signIn = async (req, res, next) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: false,
+      secure: process.env.NODE_ENV === "development",
       sameSite: "Lax",
       maxAge: 1000 * 60 * 60,
     });
@@ -128,4 +129,12 @@ export const getCurrentUser = async (req, res) => {
 
 //Logout
 
-export const logout = (req, res) => {};
+export const logout = async (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "Lax",
+  });
+
+  res.status(200).json({ message: "Utloggning lyckades" });
+};
