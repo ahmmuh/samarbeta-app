@@ -14,17 +14,12 @@ const keySchema = new mongoose.Schema(
 
     borrowedBy: {
       type: mongoose.Schema.Types.ObjectId,
-      refPath: "borrowedByModel", // 🔥 Dynamisk ref här
+      ref: "User",
       default: null,
-    },
-    borrowedByModel: {
-      type: String,
-      enum: ["Chef", "Specialist"], // 🔥 Vilken modell borrowedBy ska hämta från
-      required: false,
     },
     lastBorrowedBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // Om du vill spara sista användaren som lånade
+      ref: "User",
       default: null,
     },
 
@@ -36,4 +31,5 @@ const keySchema = new mongoose.Schema(
 
 const KeyModel =
   mongoose.models.KeyModel || mongoose.model("KeyModel", keySchema);
+
 export default KeyModel;

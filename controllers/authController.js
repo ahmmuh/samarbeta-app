@@ -6,6 +6,7 @@ import Unit from "../models/unit.js";
 
 export const signUp = async (req, res, next) => {
   const { name, email, phone, username, password, role, unitId } = req.body;
+  console.log("NEW USER", req.body);
 
   try {
     const unit = await Unit.findById(unitId);
