@@ -20,14 +20,10 @@ userRouter.put("/users/:userId", getToken, updateUser);
 
 userRouter.get("/users/keys/:keyId/:userId", getToken, displayBorrowedByUser);
 
-userRouter.patch(
-  "/:userType/keys/:keyId/:userId/checkin",
-  getToken,
-  checkInKey
-);
+userRouter.patch("/keys/:keyId/:userId/checkin", getToken, checkInKey);
 
 userRouter.patch(
-  "/:userType/keys/:keyId/:userId/checkout",
+  "/keys/:keyId/:userId/checkout",
   getToken,
   checkOutKeyAndAssignToUser
 );
