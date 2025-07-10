@@ -18,7 +18,7 @@ const unitSchema = new mongoose.Schema(
         required: true,
       },
     },
-    users: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // 👈 N
+    users: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], 
     tasks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Task" }],
     workPlaces: [{ type: mongoose.Schema.Types.ObjectId, ref: "WorkPlace" }],
     apartments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Apartment" }],

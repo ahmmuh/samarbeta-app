@@ -1,3 +1,4 @@
+import { populate } from "dotenv";
 import { geocodeAddress } from "../helperFunction/helper.js";
 import Apartment from "../models/apartment.js";
 import KeyModel from "../models/key.js";
@@ -36,27 +37,33 @@ export const createUnit = async (req, res) => {
 };
 
 export const getAllUnits = async (req, res) => {
-  console.log("Called getToken när jag använder api/units");
-  console.log("Token i cookies: api/units", req.cookies.token);
   try {
-    // Hämta alla enheter först
     const units = await Unit.find()
       .populate("apartments")
       .populate("keys")
-      .populate("tasks")
       .populate({
         path: "users",
         select: "-password",
       });
 
-    // Hämta alla tasks och gruppera dem efter unit
+    const unitsWithTasks = await Promise.all(
+      units.map(async (unit) => {
+        const tasks = await Task.find({ unit: unit._id });
+        return {
+          ...unit.toObject(),
+          tasks,
+          tasksCount: tasks.length,
+        };
+      })
+    );
 
-    return res.status(200).json(units);
+    return res.status(200).json(unitsWithTasks);
   } catch (error) {
     console.error("Fel vid hämtning av enheter:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 //Lägg befintlig användare till befintlig ENHET
 
 export const addUserToUnit = async (req, res) => {
@@ -101,8 +108,14 @@ export const getUnitByID = async (req, res) => {
   try {
     const { unitId } = req.params;
     const unit = await Unit.findById(unitId)
-      .populate("tasks")
       .populate("apartments")
+      .populate({
+        path: "keys",
+        populate: [
+          { path: "borrowedBy", select: "-password" },
+          { path: "lastBorrowedBy", select: "-password" },
+        ],
+      })
       .populate({
         path: "users",
         select: "-password",
@@ -111,8 +124,9 @@ export const getUnitByID = async (req, res) => {
     if (!unit) {
       return res.status(404).json({ message: "Enheten hittades inte" });
     }
+    const tasks = await Task.find({ unit: unitId });
 
-    return res.status(200).json(unit);
+    return res.status(200).json({ ...unit.toObject(), tasks });
   } catch (error) {
     console.error("Fel vid hämtning av enhet:", error);
     res.status(500).json({ message: "Serverfel" });
