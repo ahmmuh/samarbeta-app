@@ -5,6 +5,7 @@ import {
   getAllKeys,
   getKey,
   getKeyById,
+  searchKey,
   updateKey,
 } from "../controllers/KeyController.js";
 import { getToken } from "../middleware/authMiddleware.js";
@@ -13,7 +14,9 @@ const keyRoute = express.Router();
 
 keyRoute.post("/keys/add", getToken, addNewKey);
 
+keyRoute.get("/keys/search", getToken, searchKey);
 keyRoute.get("/keys", getToken, getAllKeys);
+
 keyRoute.get("/keys/:keyId/:userId", getToken, getKey);
 keyRoute.get("/keys/:keyId", getToken, getKeyById);
 

@@ -498,6 +498,33 @@ export const deleteKey = async (req, res) => {
   }
 };
 
+//Search keys by query
+// controllers/keyController.js
+export const searchKey = async (req, res) => {
+  const { keyLabel } = req.query;
+
+  if (!keyLabel) {
+    return res.status(400).json({ message: "keyLabel saknas i förfrågan" });
+  }
+
+  try {
+    const keys = await KeyModel.find({
+      keyLabel: { $regex: keyLabel, $options: "i" },
+    });
+
+    if (keys.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "Ingen nyckel matchar sökningen." });
+    }
+
+    return res.status(200).json({ message: "Nycklar hittades", data: keys });
+  } catch (error) {
+    console.error("Fel vid sökning:", error.message);
+    return res.status(500).json({ message: "Serverfel" });
+  }
+};
+
 //get logs
 
 export const getKeyLogs = async (req, res) => {
