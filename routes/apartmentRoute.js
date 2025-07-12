@@ -4,12 +4,14 @@ import {
   deleteApartment,
   getAllApartments,
   getApartmentByID,
+  searchApartment,
   updateApartment,
 } from "../controllers/ApartmentController.js";
 import { getToken } from "../middleware/authMiddleware.js";
 
 const apartmentRoute = express.Router();
 
+apartmentRoute.get("/apartments/search", getToken, searchApartment);
 apartmentRoute.get("/apartments", getToken, getAllApartments);
 apartmentRoute.get("/apartments/:apartmentId", getToken, getApartmentByID);
 apartmentRoute.patch("/apartments/:apartmentId", getToken, updateApartment);

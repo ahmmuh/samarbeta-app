@@ -166,3 +166,32 @@ export const deleteUnit = async (req, res) => {
     res.status(500).json({ message: "Serverfel", error: error.message });
   }
 };
+
+//Sök enheter
+
+export const searchUnit = async (req, res) => {
+  const { name } = req.query;
+
+  if (!name) {
+    return res.status(400).json({ message: "query saknas i förfrågan" });
+  }
+
+  try {
+    const apartments = await Unit.find({
+      name: { $regex: name, $options: "i" },
+    });
+
+    if (apartments.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "Ingen enhet matchar sökningen." });
+    }
+
+    return res
+      .status(200)
+      .json({ message: "Enhet hittades", data: apartments });
+  } catch (error) {
+    console.error("Fel vid sökning:", error.message);
+    return res.status(500).json({ message: "Serverfel vid sökning." });
+  }
+};

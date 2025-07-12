@@ -111,3 +111,32 @@ export const deleteApartment = async (req, res) => {
     res.status(500).json({ message: "Internal server error", error });
   }
 };
+
+// Sök lägenheter
+
+export const searchApartment = async (req, res) => {
+  const { apartmentLocation } = req.query;
+
+  if (!apartmentLocation) {
+    return res.status(400).json({ message: "query saknas i förfrågan" });
+  }
+
+  try {
+    const apartments = await Apartment.find({
+      apartmentLocation: { $regex: apartmentLocation, $options: "i" },
+    }).populate("assignedUnit");
+
+    if (apartments.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "Ingen lägenhet matchar sökningen." });
+    }
+
+    return res
+      .status(200)
+      .json({ message: "Lägenheter hittades", data: apartments });
+  } catch (error) {
+    console.error("Fel vid sökning:", error.message);
+    return res.status(500).json({ message: "Serverfel vid sökning." });
+  }
+};
