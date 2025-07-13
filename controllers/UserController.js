@@ -3,7 +3,7 @@ import User from "../models/user.js";
 
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().select("-password");
+    const users = await User.find().select("-password").populate("unit");
 
     return res.status(200).json(users);
   } catch (error) {
@@ -16,17 +16,14 @@ export const getAllUsers = async (req, res) => {
 
 export const getUserById = async (req, res) => {
   const { userId } = req.params;
+  console.log("USERID i getUserById", userId);
 
   if (!userId) {
     return res.status(400).json({ message: "Ingen användar-ID angiven" });
   }
 
   try {
-    // Försök hitta användaren i någon av modellerna
-    const user =
-      (await User.findById(userId)) ||
-      (await Chef.findById(userId)) ||
-      (await Specialist.findById(userId));
+    const user = await User.findById(userId).select("-password");
 
     if (!user) {
       return res.status(404).json({ message: "Användaren hittades inte" });

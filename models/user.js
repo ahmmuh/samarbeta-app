@@ -16,7 +16,6 @@ const userSchema = new mongoose.Schema({
   unit: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Unit",
-    required: true,
   },
 
   keys: [{ type: mongoose.Schema.Types.ObjectId, ref: "KeyModel" }],
