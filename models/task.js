@@ -8,6 +8,7 @@ const taskSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ["Ej påbörjat", "Påbörjat", "Färdigt"],
+
       default: "Ej påbörjat",
     },
     unit: { type: mongoose.Schema.Types.ObjectId, ref: "Unit" },
