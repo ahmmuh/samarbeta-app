@@ -41,14 +41,15 @@ export const getUserById = async (req, res) => {
 
 export const updateUser = async (req, res) => {
   const { userId } = req.params;
-  const updateData = req.body;
+  // const { name, email, phone, username, role, unit } = req.body;
 
+  const updateData = req.body;
   if (!userId) {
     return res.status(400).json({ message: "userId saknas" });
   }
 
   try {
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).select("-password");
 
     if (!user) {
       return res.status(404).json({ message: "Kunde inte hitta user" });
@@ -57,7 +58,7 @@ export const updateUser = async (req, res) => {
     Object.assign(user, updateData);
 
     await user.save();
-
+    console.log("En användare uppdaterats", user);
     return res.status(200).json({ message: "user har uppdaterats", user });
   } catch (error) {
     console.error("Fel vid uppdatering av user:", error);
