@@ -65,3 +65,30 @@ export const updateUser = async (req, res) => {
     return res.status(500).json({ message: "Internt serverfel" });
   }
 };
+
+//Sök användare
+
+export const searchUser = async (req, res) => {
+  const { name } = req.query;
+
+  if (!name) {
+    return res.status(400).json({ message: "Namn saknas i förfrågan" });
+  }
+
+  try {
+    const users = await User.find({
+      name: { $regex: name, $options: "i" },
+    });
+
+    if (users.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "Ingen användare matchar sökningen." });
+    }
+
+    return res.status(200).json({ message: "Användare hittades", data: users });
+  } catch (error) {
+    console.error("Fel vid sökning:", error.message);
+    return res.status(500).json({ message: "Serverfel" });
+  }
+};

@@ -7,6 +7,7 @@ import {
 import {
   getAllUsers,
   getUserById,
+  searchUser,
   updateUser,
 } from "../controllers/UserController.js";
 import { getToken } from "../middleware/authMiddleware.js";
@@ -14,7 +15,9 @@ import { getCurrentUser } from "../controllers/authController.js";
 
 const userRouter = express.Router();
 
+userRouter.get("/users/search", getToken, searchUser);
 userRouter.get("/users", getToken, getAllUsers);
+
 userRouter.get("/users/:userId", getToken, getUserById);
 userRouter.put("/users/:userId", getToken, updateUser);
 
