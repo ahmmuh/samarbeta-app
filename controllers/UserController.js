@@ -1,3 +1,4 @@
+import KeyModel from "../models/key.js";
 import Unit from "../models/unit.js";
 import User from "../models/user.js";
 
@@ -63,6 +64,57 @@ export const updateUser = async (req, res) => {
   } catch (error) {
     console.error("Fel vid uppdatering av user:", error);
     return res.status(500).json({ message: "Internt serverfel" });
+  }
+};
+
+// Delete användare
+// export const deleteUser = async (req, res) => {
+//   const { userId } = req.params;
+
+//   try {
+//     const deletedUser = await User.findByIdAndDelete(userId);
+//     if (!deletedUser) {
+//       return res.status(404).json({ message: "Användare hittades inte" });
+//     }
+
+//     return res
+//       .status(200)
+//       .json({ message: "Användare borttagen", Användare: deletedUser });
+//   } catch (error) {
+//     console.error("Error:", error.message);
+//     return res.status(500).json({ message: "Serverfel", error: error.message });
+//   }
+// };
+
+export const deleteUser = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "Användare hittades inte" });
+    }
+
+    user.keys = [];
+    await user.save();
+
+    await KeyModel.updateMany(
+      { borrowedBy: userId },
+      { $set: { borrowedBy: null } }
+    );
+    await KeyModel.updateMany(
+      { lastBorrowedBy: userId },
+      { $set: { lastBorrowedBy: null } }
+    );
+
+    const deletedUser = await User.findByIdAndDelete(userId);
+
+    return res
+      .status(200)
+      .json({ message: "Användare borttagen", användare: deletedUser });
+  } catch (error) {
+    console.error("Error:", error.message);
+    return res.status(500).json({ message: "Serverfel", error: error.message });
   }
 };
 

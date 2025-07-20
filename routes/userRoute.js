@@ -5,6 +5,7 @@ import {
   displayBorrowedByUser,
 } from "../controllers/KeyController.js";
 import {
+  deleteUser,
   getAllUsers,
   getUserById,
   searchUser,
@@ -17,6 +18,7 @@ const userRouter = express.Router();
 
 userRouter.get("/users/search", getToken, searchUser);
 userRouter.get("/users", getToken, getAllUsers);
+userRouter.delete("/users/:userId", getToken, deleteUser);
 
 userRouter.get("/users/:userId", getToken, getUserById);
 userRouter.put("/users/:userId", getToken, updateUser);
