@@ -37,6 +37,11 @@ export const createUnit = async (req, res) => {
 };
 
 export const getAllUnits = async (req, res) => {
+  // await User.updateMany(
+  //   { isDeleted: { $exists: false } },
+  //   { $set: { isDeleted: false } }
+  // );
+
   try {
     const units = await Unit.find()
       .populate("apartments")

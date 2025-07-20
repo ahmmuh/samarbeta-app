@@ -4,7 +4,9 @@ import User from "../models/user.js";
 
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().select("-password").populate("unit");
+    const users = await User.find({ isDeleted: false })
+      .select("-password")
+      .populate("unit");
 
     return res.status(200).json(users);
   } catch (error) {
@@ -98,16 +100,20 @@ export const deleteUser = async (req, res) => {
     user.keys = [];
     await user.save();
 
-    await KeyModel.updateMany(
-      { borrowedBy: userId },
-      { $set: { borrowedBy: null } }
-    );
-    await KeyModel.updateMany(
-      { lastBorrowedBy: userId },
-      { $set: { lastBorrowedBy: null } }
-    );
+    // await KeyModel.updateMany(
+    //   { borrowedBy: userId },
+    //   { $set: { borrowedBy: null } }
+    // );
+    // await KeyModel.updateMany(
+    //   { lastBorrowedBy: userId },
+    //   { $set: { lastBorrowedBy: null } }
+    // );
 
-    const deletedUser = await User.findByIdAndDelete(userId);
+    const deletedUser = await User.findByIdAndUpdate(
+      userId,
+      { isDeleted: true },
+      { new: true }
+    );
 
     return res
       .status(200)
