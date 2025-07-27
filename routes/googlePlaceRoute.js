@@ -7,9 +7,8 @@ import { getToken } from "../middleware/authMiddleware.js";
 
 const googlePlaceRoute = express.Router();
 
+googlePlaceRoute.get("/places", getToken, getPlaces);
 
-googlePlaceRoute.get("/places", getPlaces);
-
-googlePlaceRoute.get("/places/details/:placeId", getPlaceDetail);
+googlePlaceRoute.get("/places/details/:placeId", getToken, getPlaceDetail);
 
 export default googlePlaceRoute;
