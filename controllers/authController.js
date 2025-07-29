@@ -39,11 +39,11 @@ export const signUp = async (req, res, next) => {
 
     console.log("Ny ANvändare kommer att registrera:", user);
     await user.save();
-    unit.users.push(user._id);
+    // unit.users.push(user._id);
     // unit.save();
     res.status(201).json({ message: "User created" });
   } catch (error) {
-    console.error("Fel vid skapande av ny användare:", error); // Lägg till denna rad
+    console.error("Fel vid skapande av ny användare:", error);
     return res
       .status(500)
       .json({ message: "Ny användare kunde inte läggas till" });
