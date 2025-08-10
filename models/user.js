@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema({
 
   role: {
     type: String,
-    enum: ["Chef", "Specialist"],
+    enum: ["Avdelningschef ", "Områdeschef", "Enhetschef", "Specialare"],
   },
 
   unit: {
