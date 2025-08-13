@@ -29,7 +29,9 @@ app.use(
   })
 );
 const PORT = process.env.PORT || 8000;
-
+app.get("*", (req, res) => {
+  res.status(200).json({ Message: "HELLO WORLD!" });
+});
 app.use("/api", authRoute);
 
 // app.use("/api", addressRoute);
