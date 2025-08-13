@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 import KeyModel from "../models/key.js";
 const getConnection = async () => {
-  const url =
-    "mongodb+srv://ahmmuh:Quuquule1234,,@cluster0.do469pc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+  const url = process.env.DB_CONNECTION_STRING;
+  //"mongodb+srv://ahmmuh:Quuquule1234,,@cluster0.do469pc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
   try {
     await mongoose.connect(url);

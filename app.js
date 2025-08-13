@@ -28,7 +28,7 @@ app.use(
     credentials: true,
   })
 );
-const port = 8000;
+const PORT = process.env.PORT || 8000;
 
 app.use("/api", authRoute);
 
@@ -44,7 +44,7 @@ app.use("/api", keyLogRoute);
 app.use("/api", userRouter);
 
 // app.use("/api/cronjobs", cronJobRoute);
-app.listen(port, () => {
-  console.log(`The Server listening on port ${port}`);
+app.listen(PORT, () => {
+  console.log(`The Server listening on port ${PORT}`);
   getConnection();
 });
