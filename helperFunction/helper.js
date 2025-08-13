@@ -1,7 +1,7 @@
 import mbxGeocoding from "@mapbox/mapbox-sdk/services/geocoding.js";
 
-const mapboxToken =
-  "pk.eyJ1IjoiYWhtbXVoIiwiYSI6ImNtYm1kczJhcDE2MDAya3NkY2U1ZjFhZWoifQ.cDeys86Y6kPJOXRMPkCT2A";
+const mapboxToken = process.env.MAPBOX_TOKEN;
+// "pk.eyJ1IjoiYWhtbXVoIiwiYSI6ImNtYm1kczJhcDE2MDAya3NkY2U1ZjFhZWoifQ.cDeys86Y6kPJOXRMPkCT2A";
 
 const geocodingClient = mbxGeocoding({ accessToken: mapboxToken });
 

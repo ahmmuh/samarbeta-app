@@ -84,7 +84,7 @@ export const signIn = async (req, res, next) => {
 
     res.json({ token, user });
   } catch (err) {
-    next(err); // Passes error to Express error handler
+    next(err);
   }
 };
 
