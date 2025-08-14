@@ -29,9 +29,7 @@ app.use(
   })
 );
 const PORT = process.env.PORT || 8000;
-app.get("*", (req, res) => {
-  res.status(200).json({ Message: "HELLO WORLD!" });
-});
+
 app.use("/api", authRoute);
 
 // app.use("/api", addressRoute);
@@ -44,7 +42,9 @@ app.use("/api", qrCodeRoute);
 app.use("/api", keyRoute);
 app.use("/api", keyLogRoute);
 app.use("/api", userRouter);
-
+app.get("*", (req, res) => {
+  res.status(200).json({ Message: "HELLO WORLD!" });
+});
 // app.use("/api/cronjobs", cronJobRoute);
 app.listen(PORT, () => {
   console.log(`The Server listening on port ${PORT}`);
