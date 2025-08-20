@@ -49,6 +49,7 @@ export const getAllUnits = async (req, res) => {
       .populate({
         path: "users",
         select: "-password",
+        // populate: { path: "keys" },
       });
 
     const unitsWithTasks = await Promise.all(

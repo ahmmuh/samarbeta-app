@@ -245,24 +245,24 @@ export const checkInKey = async (req, res) => {
 };
 
 //hämta nyckel från användare (ej färdig kodat)
-export const getKeyFromUser = async (req, res) => {
-  const { userId } = req.body;
-  if (!userId) return res.status(400).json({ message: "Användare-ID krävs" });
+// export const getKeyFromUser = async (req, res) => {
+//   const { userId } = req.body;
+//   if (!userId) return res.status(400).json({ message: "Användare-ID krävs" });
 
-  try {
-    //hämta user först för att sedan kunna hämta keys by User ID
-    const user = await User.findById(userId).populate("keys");
-    if (user.keys.length === 0) {
-      return res.status(400).json({ message: "Nycklarna finns inte" });
-    }
+//   try {
+//     //hämta user först för att sedan kunna hämta keys by User ID
+//     const user = await User.findById(userId).populate("keys");
+//     if (user.keys.length === 0) {
+//       return res.status(400).json({ message: "Nycklarna finns inte" });
+//     }
 
-    res.status(200).json(user.keys);
-  } catch (error) {
-    return res
-      .status(500)
-      .json({ message: "Server error, vid hämtning av nycklar" });
-  }
-};
+//     res.status(200).json(user.keys);
+//   } catch (error) {
+//     return res
+//       .status(500)
+//       .json({ message: "Server error, vid hämtning av nycklar" });
+//   }
+// };
 
 // inte färdig kodat - hämta nycklar hos användare
 
@@ -415,56 +415,56 @@ export const addNewKey = async (req, res) => {
 //test kod för att lägga key till users (chef,specialist) dynamiskt
 
 // Återanvändbar metod för att lägga till nyckel till olika användartyper
-export const addKeyToUser = async (req, res) => {
-  const { unitId, userId, keyId, userType } = req.params; // Lägg till userType för att identifiera användartypen
-  console.log("Req.params", req.params);
-  console.log("userType", userType);
-  // Kontrollera om alla parametrar finns
-  if (!unitId || !userId || !keyId || !userType) {
-    return res
-      .status(404)
-      .json({ message: "Användar-ID, Nyckel-ID eller användartyp krävs" });
-  }
+// export const addKeyToUser = async (req, res) => {
+//   const { unitId, userId, keyId, userType } = req.params; // Lägg till userType för att identifiera användartypen
+//   console.log("Req.params", req.params);
+//   console.log("userType", userType);
+//   // Kontrollera om alla parametrar finns
+//   if (!unitId || !userId || !keyId || !userType) {
+//     return res
+//       .status(404)
+//       .json({ message: "Användar-ID, Nyckel-ID eller användartyp krävs" });
+//   }
 
-  try {
-    // Dynamiskt hitta användaren baserat på userType
-    let user;
-    switch (userType) {
-      case "chefer":
-        user = await Chef.findById(userId);
-        break;
-      case "specialister":
-        user = await Specialist.findById(userId);
-        break;
+//   try {
+//     // Dynamiskt hitta användaren baserat på userType
+//     let user;
+//     switch (userType) {
+//       case "chefer":
+//         user = await Chef.findById(userId);
+//         break;
+//       case "specialister":
+//         user = await Specialist.findById(userId);
+//         break;
 
-      default:
-        return res.status(404).json({ message: "Ogiltig användartyp" });
-    }
+//       default:
+//         return res.status(404).json({ message: "Ogiltig användartyp" });
+//     }
 
-    if (!user) {
-      return res.status(404).json({ message: "Användare inte funnen" });
-    }
+//     if (!user) {
+//       return res.status(404).json({ message: "Användare inte funnen" });
+//     }
 
-    const key = await KeyModel.findById(keyId);
-    if (!key) {
-      return res.status(404).json({ message: "Nyckel inte funnen" });
-    }
+//     const key = await KeyModel.findById(keyId);
+//     if (!key) {
+//       return res.status(404).json({ message: "Nyckel inte funnen" });
+//     }
 
-    // Lägg till nyckeln i användarens lista
-    user.keys.push(key._id);
-    await user.save();
+//     // Lägg till nyckeln i användarens lista
+//     user.keys.push(key._id);
+//     await user.save();
 
-    return res.status(200).json({
-      message: `Nyckeln har lagts till ${userType.slice(0, -1)}n`,
-      user,
-    });
-  } catch (error) {
-    console.error("Fel vid tilldelning av nyckel till användare", error);
-    return res
-      .status(500)
-      .json({ message: "Serverfel vid tilldelning av nyckel" });
-  }
-};
+//     return res.status(200).json({
+//       message: `Nyckeln har lagts till ${userType.slice(0, -1)}n`,
+//       user,
+//     });
+//   } catch (error) {
+//     console.error("Fel vid tilldelning av nyckel till användare", error);
+//     return res
+//       .status(500)
+//       .json({ message: "Serverfel vid tilldelning av nyckel" });
+//   }
+// };
 
 //Update key
 export const updateKey = async (req, res) => {
@@ -527,6 +527,6 @@ export const searchKey = async (req, res) => {
 
 //get logs
 
-export const getKeyLogs = async (req, res) => {
-  const { keyId, userId } = req.body;
-};
+// export const getKeyLogs = async (req, res) => {
+//   const { keyId, userId } = req.body;
+// };

@@ -6,7 +6,8 @@ export const getAllUsers = async (req, res) => {
   try {
     const users = await User.find({ isDeleted: false })
       .select("-password")
-      .populate("unit");
+      .populate("unit")
+      .populate("keys");
 
     return res.status(200).json(users);
   } catch (error) {

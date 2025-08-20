@@ -1,7 +1,10 @@
+import dotenv from "dotenv";
+dotenv.config();
 import mbxGeocoding from "@mapbox/mapbox-sdk/services/geocoding.js";
-
 const mapboxToken = process.env.MAPBOX_TOKEN;
-// "pk.eyJ1IjoiYWhtbXVoIiwiYSI6ImNtYm1kczJhcDE2MDAya3NkY2U1ZjFhZWoifQ.cDeys86Y6kPJOXRMPkCT2A";
+// console.log("MAPBOX_TOKEN:", process.env.MAPBOX_TOKEN);
+// console.log("PORT:", process.env.PORT);
+// console.log("DB_CONNECTION_STRING:", process.env.DB_CONNECTION_STRING);
 
 const geocodingClient = mbxGeocoding({ accessToken: mapboxToken });
 
