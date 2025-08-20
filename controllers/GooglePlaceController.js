@@ -41,6 +41,8 @@ export const getPlaceDetail = async (req, res) => {
       },
     });
 
+    console.log("GOOGLE PLACES API DATA", response.data);
+
     res.status(200).json(response.data);
   } catch (error) {
     console.error(`Error fetching place details: ${error.message}`);
