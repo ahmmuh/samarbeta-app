@@ -357,7 +357,6 @@ export const addNewKey = async (req, res) => {
     });
 
     await newKey.save();
-
     unit.keys.push(newKey._id);
     await unit.save();
 

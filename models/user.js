@@ -13,8 +13,15 @@ const userSchema = new mongoose.Schema({
   },
 
   role: {
-    type: String,
-    enum: ["Avdelningschef ", "Områdeschef", "Enhetschef", "Specialare"],
+    type: [String],
+    enum: [
+      "Avdelningschef ",
+      "Områdeschef",
+      "Enhetschef",
+      "Flyttstädansvarig",
+      "Specialare",
+    ],
+    default: [],
   },
 
   unit: {
