@@ -61,9 +61,9 @@ export const updateUser = async (req, res) => {
       return res.status(404).json({ message: "Kunde inte hitta user" });
     }
 
-    // Object.assign(user, updateData);
+    Object.assign(user, updateData);
 
-    // await user.save();
+    await user.save();
     console.log("En användare uppdaterats", user);
     return res.status(200).json({ message: "user har uppdaterats", user });
   } catch (error) {

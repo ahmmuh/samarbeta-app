@@ -197,7 +197,7 @@ export const checkInKey = async (req, res) => {
     const foundKey = await KeyModel.findById(keyId);
     if (!foundKey) return res.status(404).json({ message: "Nyckeln finns ej" });
 
-    const foundUser = User.findById(userId);
+    const foundUser = await User.findById(userId);
     if (!foundUser) {
       return res.status(404).json({ message: "Användaren hittades inte" });
     }
@@ -243,28 +243,6 @@ export const checkInKey = async (req, res) => {
       .json({ message: "Serverfel vid inlämning av nyckel" });
   }
 };
-
-//hämta nyckel från användare (ej färdig kodat)
-// export const getKeyFromUser = async (req, res) => {
-//   const { userId } = req.body;
-//   if (!userId) return res.status(400).json({ message: "Användare-ID krävs" });
-
-//   try {
-//     //hämta user först för att sedan kunna hämta keys by User ID
-//     const user = await User.findById(userId).populate("keys");
-//     if (user.keys.length === 0) {
-//       return res.status(400).json({ message: "Nycklarna finns inte" });
-//     }
-
-//     res.status(200).json(user.keys);
-//   } catch (error) {
-//     return res
-//       .status(500)
-//       .json({ message: "Server error, vid hämtning av nycklar" });
-//   }
-// };
-
-// inte färdig kodat - hämta nycklar hos användare
 
 export const getKey = async (req, res) => {
   const { keyId, userId } = req.params;
