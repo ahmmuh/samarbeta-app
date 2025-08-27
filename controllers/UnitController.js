@@ -43,6 +43,7 @@ export const getAllUnits = async (req, res) => {
       .populate("keys")
       .populate({
         path: "users",
+        match: { isDeleted: { $ne: true } },
         select: "-password",
         populate: {
           path: "keys",
@@ -156,6 +157,7 @@ export const getUnitByID = async (req, res) => {
       })
       .populate({
         path: "users",
+        match: { isDeleted: { $ne: true } },
         select: "-password",
       });
 

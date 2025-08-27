@@ -4,7 +4,7 @@ import User from "../models/user.js";
 
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find({ isDeleted: false })
+    const users = await User.find({ isDeleted: { $ne: true } })
       .select("-password")
       .populate("unit")
       .populate("keys");
