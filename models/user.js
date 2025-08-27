@@ -20,6 +20,7 @@ const userSchema = new mongoose.Schema({
       "Enhetschef",
       "Flyttstädansvarig",
       "Specialare",
+      "Lokalvårdare",
     ],
     default: [],
   },

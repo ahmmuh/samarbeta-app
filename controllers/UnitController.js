@@ -37,11 +37,6 @@ export const createUnit = async (req, res) => {
 };
 
 export const getAllUnits = async (req, res) => {
-  // await User.updateMany(
-  //   { isDeleted: { $exists: false } },
-  //   { $set: { isDeleted: false } }
-  // );
-
   try {
     const units = await Unit.find()
       .populate("apartments")
@@ -49,7 +44,10 @@ export const getAllUnits = async (req, res) => {
       .populate({
         path: "users",
         select: "-password",
-        // populate: { path: "keys" },
+        populate: {
+          path: "keys",
+          model: "KeyModel", // viktigt att specificera om nödvändigt
+        },
       });
 
     const unitsWithTasks = await Promise.all(
@@ -69,6 +67,40 @@ export const getAllUnits = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+// export const getAllUnits = async (req, res) => {
+//   // await User.updateMany(
+//   //   { isDeleted: { $exists: false } },
+//   //   { $set: { isDeleted: false } }
+//   // );
+
+//   try {
+//     const units = await Unit.find()
+//       .populate("apartments")
+//       .populate("keys")
+//       .populate({
+//         path: "users",
+//         select: "-password",
+//         // populate: { path: "keys" },
+//       });
+
+//     const unitsWithTasks = await Promise.all(
+//       units.map(async (unit) => {
+//         const tasks = await Task.find({ unit: unit._id });
+//         return {
+//           ...unit.toObject(),
+//           tasks,
+//           tasksCount: tasks.length,
+//         };
+//       })
+//     );
+
+//     return res.status(200).json(unitsWithTasks);
+//   } catch (error) {
+//     console.error("Fel vid hämtning av enheter:", error);
+//     res.status(500).json({ message: "Internal Server Error" });
+//   }
+// };
 
 //Lägg befintlig användare till befintlig ENHET
 

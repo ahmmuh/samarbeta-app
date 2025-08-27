@@ -47,23 +47,43 @@ export const getUserById = async (req, res) => {
 
 export const updateUser = async (req, res) => {
   const { userId } = req.params;
-  // const { name, email, phone, username, role, unit } = req.body;
-
   const updateData = req.body;
+
   if (!userId) {
     return res.status(400).json({ message: "userId saknas" });
   }
 
   try {
     const user = await User.findById(userId).select("-password");
-
     if (!user) {
       return res.status(404).json({ message: "Kunde inte hitta user" });
     }
 
-    Object.assign(user, updateData);
+    // Om användaren byter enhet
+    if (updateData.unit && user.unit?.toString() !== updateData.unit) {
+      // Kolla att nya enheten finns
+      const newUnit = await Unit.findById(updateData.unit);
+      if (!newUnit) {
+        return res
+          .status(404)
+          .json({ message: "Kunde inte hitta nya enheten" });
+      }
 
+      // Ta bort användaren från gamla enheten
+      if (user.unit) {
+        await Unit.findByIdAndUpdate(user.unit, { $pull: { users: userId } });
+      }
+
+      // Lägg till användaren i nya enheten
+      await Unit.findByIdAndUpdate(updateData.unit, {
+        $addToSet: { users: userId },
+      });
+    }
+
+    // Uppdatera användarens fält
+    Object.assign(user, updateData);
     await user.save();
+
     console.log("En användare uppdaterats", user);
     return res.status(200).json({ message: "user har uppdaterats", user });
   } catch (error) {
@@ -71,6 +91,33 @@ export const updateUser = async (req, res) => {
     return res.status(500).json({ message: "Internt serverfel" });
   }
 };
+
+// export const updateUser = async (req, res) => {
+//   const { userId } = req.params;
+//   // const { name, email, phone, username, role, unit } = req.body;
+
+//   const updateData = req.body;
+//   if (!userId) {
+//     return res.status(400).json({ message: "userId saknas" });
+//   }
+
+//   try {
+//     const user = await User.findById(userId).select("-password");
+
+//     if (!user) {
+//       return res.status(404).json({ message: "Kunde inte hitta user" });
+//     }
+
+//     Object.assign(user, updateData);
+
+//     await user.save();
+//     console.log("En användare uppdaterats", user);
+//     return res.status(200).json({ message: "user har uppdaterats", user });
+//   } catch (error) {
+//     console.error("Fel vid uppdatering av user:", error);
+//     return res.status(500).json({ message: "Internt serverfel" });
+//   }
+// };
 
 // Delete användare
 // export const deleteUser = async (req, res) => {
