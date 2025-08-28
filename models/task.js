@@ -1,20 +1,21 @@
 import mongoose from "mongoose";
-
 const taskSchema = new mongoose.Schema(
   {
     title: String,
     description: String,
-    location: String,
+    location: String, // adress
+    coordinates: {
+      type: [Number], // [lon, lat]
+      default: null,
+    },
     status: {
       type: String,
       enum: ["Ej påbörjat", "Påbörjat", "Färdigt"],
-
       default: "Ej påbörjat",
     },
     unit: { type: mongoose.Schema.Types.ObjectId, ref: "Unit" },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },
-
   { timestamps: true }
 );
 
