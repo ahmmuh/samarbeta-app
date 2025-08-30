@@ -5,7 +5,6 @@ import User from "../models/user.js";
 // ---------------------------
 // Lägg till task (utan enhet)
 // ---------------------------
-import Task from "../models/task.js";
 
 export const addTask = async (req, res) => {
   const { title, description, location, coordinates } = req.body;
@@ -28,6 +27,7 @@ export const addTask = async (req, res) => {
       // unit och createdBy lämnas tomma
     });
 
+    console.log("NYTT UPPDRAG", newTask);
     await newTask.save();
     return res.status(200).json(newTask);
   } catch (error) {
