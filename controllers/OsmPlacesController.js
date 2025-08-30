@@ -3,36 +3,55 @@ import axios from "axios";
 // Nominatim URL
 const BASE_URL = "https://nominatim.openstreetmap.org/search";
 
-/**
- * Sök platser (autocomplete-liknande)
- * GET /api/places?query=skola
- */
 export const getPlaces = async (req, res) => {
   try {
     const { query } = req.query;
     if (!query) {
-      return res.status(400).json({ message: "Query parameter is required" });
+      return res.status(400).json({ message: "En sökparameter krävs" });
     }
 
     // Anropa Nominatim
     const response = await axios.get(BASE_URL, {
       params: {
         q: query, // sökord
-        format: "json", // JSON-svar
-        limit: 10, // max antal resultat
+        format: "json",
+        limit: 10,
+        addressdetails: 1,
+        namedetails: 1,
       },
       headers: {
-        "User-Agent": "your-app-name", // Nominatim kräver User-Agent
+        "User-Agent": "Ecavatten",
       },
     });
 
-    // Filtrera till namn, adress och koordinater
-    const results = response.data.map((item) => ({
-      name: item.display_name, // kan vara kort namn + adress
-      adress: item.display_name,
-      coordinates: [parseFloat(item.lon), parseFloat(item.lat)],
-    }));
+    const results = response.data.map((item) => {
+      const address = item.address || {};
 
+      // Försök ta ett vettigt namn
+      const name =
+        item.namedetails?.name ||
+        address.school ||
+        address.building ||
+        item.display_name.split(",")[0]; // fallback
+
+      const adress = [
+        address.road,
+        address.house_number,
+        address.city || address.town || address.village,
+        address.postcode,
+        address.country,
+      ]
+        .filter(Boolean)
+        .join(", ");
+
+      return {
+        name,
+        adress,
+        coordinates: [parseFloat(item.lon), parseFloat(item.lat)],
+      };
+    });
+
+    console.log("OSM RESULT", results);
     res.status(200).json(results);
   } catch (error) {
     console.error(`Error fetching OSM places: ${error.message}`);
