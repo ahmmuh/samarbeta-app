@@ -196,11 +196,22 @@ export const updateUnit = async (req, res) => {
 export const deleteUnit = async (req, res) => {
   const { unitId } = req.params;
   try {
-    const deletedUnit = await Unit.findByIdAndDelete(unitId);
-    if (!deletedUnit) {
-      return res.status(404).json({ message: "Enheten kunde inte hittas" });
+    const unit = await Unit.findById(unitId);
+
+    if (!unit) {
+      return res.status(404).json({ message: "Enheten hittades ej" });
     }
 
+    //Koppla löss dessa från enhet
+
+    await User.updateMany({ unit: unitId }, { $unset: { unit: "" } });
+
+    //Ta bort dessa helt
+    await Task.deleteMany({ unit: unitId });
+    await KeyModel.deleteMany({ unit: unitId });
+    await Apartment.deleteMany({ unit: unitId });
+
+    await Unit.findByIdAndDelete(unitId);
     res.status(200).json({ message: `Enhet med ID ${unitId} har tagits bort` });
   } catch (error) {
     res.status(500).json({ message: "Serverfel", error: error.message });

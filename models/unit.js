@@ -20,7 +20,7 @@ const unitSchema = new mongoose.Schema(
     },
     users: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], 
     tasks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Task" }],
-    workPlaces: [{ type: mongoose.Schema.Types.ObjectId, ref: "WorkPlace" }],
+    // workPlaces: [{ type: mongoose.Schema.Types.ObjectId, ref: "WorkPlace" }],
     apartments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Apartment" }],
     keys: [{ type: mongoose.Schema.Types.ObjectId, ref: "KeyModel" }],
   },
