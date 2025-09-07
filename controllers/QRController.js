@@ -1,6 +1,7 @@
 import { createCanvas, loadImage } from "canvas";
 import QRCode from "qrcode";
 import KeyModel from "../models/key.js";
+import Unit from "../models/unit.js";
 
 //help function
 
@@ -33,11 +34,13 @@ const generateQRCodeWithLabel = async ({ qrText, line1, line2 }) => {
   return canvas.toDataURL(); // Base64-sträng
 };
 
-export const registerNewKey = async (req, res) => {
-  const { keyLabel, location } = req.body;
+export const AddNewKey = async (req, res) => {
+  const { keyLabel, unitId } = req.body;
 
-  if (!keyLabel || !location) {
-    return res.status(400).json({ message: "keyLabel eller location saknas" });
+  if (!keyLabel || !unitId) {
+    return res
+      .status(400)
+      .json({ message: "Nyckelnamn eller enhetensID saknas" });
   }
 
   try {
@@ -46,24 +49,40 @@ export const registerNewKey = async (req, res) => {
       return res.status(400).json({ message: "Nyckel finns redan" });
     }
 
-    // 1. Spara nyckeln först
-    const newKey = new KeyModel({ keyLabel, location });
-    await newKey.save(); // först här skapas _id
+    const newKey = new KeyModel({ keyLabel, unit: unitId });
+    await newKey.save();
 
-    // 2. Generera QR med _id
+    const unit = await Unit.findById(unitId);
+    if (!unit) {
+      return res.status(404).json({ message: "Enheten hittades inte" });
+    }
+    unit.keys.push(newKey._id);
+    await unit.save();
+
+    // Generera QR med _id
     const qrCode = await generateQRCodeWithLabel({
-      qrText: newKey._id.toString(), // <-- lägg in ID i QR-kod
+      qrText: newKey._id.toString(),
       line1: keyLabel,
-      line2: location,
+      line2: unit.name, // 👈 bättre än unitId
     });
 
-    // 3. Uppdatera nyckeln med QR-koden
+    //Uppdatera nyckeln med QR-koden
     newKey.qrCode = qrCode;
     await newKey.save();
 
+    // Populera unit.name innan return
+    const populatedKey = await KeyModel.findById(newKey._id).populate(
+      "unit",
+      "name"
+    );
+
+    console.log("NEW skapad Key", populatedKey);
+
+    console.log("NY NYCKEL", newKey);
+
     return res.status(201).json({
       message: "Nyckel registrerad",
-      key: newKey,
+      key: populatedKey,
     });
   } catch (error) {
     console.error(error);
@@ -73,8 +92,6 @@ export const registerNewKey = async (req, res) => {
     });
   }
 };
-
-//GET All key med QRCode
 
 export const getKeysWithQRCode = async (req, res) => {
   try {

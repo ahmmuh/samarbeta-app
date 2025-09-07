@@ -30,56 +30,39 @@ export const getAllKeys = async (req, res) => {
 export const displayBorrowedByUser = async (req, res) => {
   const { userId, keyId } = req.params;
 
-  if (!userId)
-    return res.status(400).json({ message: "ID for User finns inte" });
-  console.log("Borrowed USER ID: ", userId);
-  if (!keyId) return res.status(400).json({ message: "ID for KEY finns inte" });
-  console.log("KEY ID: ", keyId);
+  if (!userId) return res.status(400).json({ message: "User ID saknas" });
+  if (!keyId) return res.status(400).json({ message: "Key ID saknas" });
 
   try {
-    const key = await KeyModel.findById(keyId);
+    const key = await KeyModel.findById(keyId).populate("borrowedBy");
     if (!key) {
-      return res.status(400).json({ message: "Denna key finns ej" });
+      return res.status(404).json({ message: "Nyckeln finns inte" });
     }
 
-    console.log("Hämtad key INFO", key);
-
-    let borrower;
-
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).select("-password");
     if (!user) {
-      return res.status(400).json({ message: "Denna USER finns ej" });
+      return res.status(404).json({ message: "Användaren finns inte" });
     }
 
-    switch (user.userType) {
-      case "chefer":
-        borrower = await Chef.findById(key.borrowedBy);
-        break;
-      case "specialister":
-        borrower = await Specialist.findById(key.borrowedBy);
-        break;
-
-      default:
-        return res
-          .status(400)
-          .json({ message: "Ogiltig modell för låntagare" });
+    if (!key.borrowedBy) {
+      return res.status(400).json({ message: "Nyckeln är inte utlånad" });
     }
 
-    if (!borrower) {
-      return res
-        .status(400)
-        .json({ message: "Kan inte hitta låntagaren i databasen" });
+    if (key.borrowedBy._id.toString() !== userId) {
+      return res.status(400).json({
+        message: "Den här användaren har inte lånat denna nyckel",
+      });
     }
 
-    console.log("Hämtad borrower efter findById() metod:", borrower);
-    if (borrower._id.toString() !== userId) {
-      return res
-        .status(400)
-        .json({ message: "Den här användare har inte lånat denna nyckel" });
-    }
-
-    console.log("Lånetagre info", borrower);
-    res.status(200).json({ borrowedByUser: borrower });
+    return res.status(200).json({
+      borrowedByUser: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+      },
+    });
   } catch (error) {
     console.error("Error vid hämtning av borrowedUser", error.message);
     return res
@@ -95,12 +78,9 @@ export const checkOutKeyAndAssignToUser = async (req, res) => {
   console.log("User ID före anropet i checkOutKeyAndAssignToUser()", userId);
 
   if (!keyId || !userId) {
-    return res.status(400).json({ message: "keyId  krävs" });
+    return res.status(400).json({ message: "keyId  krävs eller userId" });
   }
 
-  if (!userId) {
-    return res.status(400).json({ message: "userId krävs" });
-  }
   try {
     // Hämta nyckeln
     const key = await KeyModel.findById(keyId);
@@ -159,7 +139,20 @@ export const checkOutKeyAndAssignToUser = async (req, res) => {
     });
 
     return res.status(200).json({
-      message: "Nyckeln har lånats ut till",
+      message: `Nyckeln har lånats ut till ${user.name}`,
+      borrowedByUser: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+      },
+      key: {
+        _id: key._id,
+        keyLabel: key.keyLabel,
+        unit: key.unit,
+        status: key.status,
+      },
     });
   } catch (error) {
     console.error("Fel vid utlåning och tilldelning av nyckel:", error);
@@ -234,7 +227,20 @@ export const checkInKey = async (req, res) => {
     });
 
     return res.status(200).json({
-      message: "Nyckeln har återlämnats",
+      message: `Nyckeln har återlämnats av ${foundUser.name}`,
+      returnedByUser: {
+        _id: foundUser._id,
+        name: foundUser.name,
+        email: foundUser.email,
+        phone: foundUser.phone,
+        role: foundUser.role,
+      },
+      key: {
+        _id: foundKey._id,
+        keyLabel: foundKey.keyLabel,
+        unit: foundKey.unit,
+        status: foundKey.status,
+      },
     });
   } catch (error) {
     console.error("Error vid inlämning av nyckel:", error.message);
@@ -250,7 +256,9 @@ export const getKey = async (req, res) => {
   if (!userId) return res.status(400).json({ message: "Användare ID krävs" });
 
   try {
-    const foundedKey = await KeyModel.findById(keyId).populate("borrowedBy");
+    const foundedKey = await KeyModel.findById(keyId)
+      .populate("unit", "name")
+      .populate("borrowedBy");
     console.log("Founded Key details:", JSON.stringify(foundedKey, null, 2));
 
     if (!foundedKey) {
@@ -286,6 +294,7 @@ export const getKeyById = async (req, res) => {
 
   try {
     const foundedKey = await KeyModel.findById(keyId)
+      .populate("unit", "name")
       .populate("borrowedBy")
       .populate("lastBorrowedBy"); // Lägg till om du också vill visa tidigare användare
 
@@ -301,147 +310,6 @@ export const getKeyById = async (req, res) => {
       .json({ message: "Serverfel vid hämtning av nyckel" });
   }
 };
-
-//Lägga till bara nycklar, ingen användare
-
-export const addNewKey = async (req, res) => {
-  const { keyLabel, location, unit: unitId } = req.body;
-  // console.log("Inkommande data:", req.body);
-
-  try {
-    const unit = await Unit.findById(unitId);
-    if (!unit)
-      return res.status(404).json({ messsage: "Enheten hittades inte" });
-    // Om nyckel finns redan i systemet
-    const existKey = await KeyModel.findOne({ keyLabel });
-
-    if (existKey) {
-      return res
-        .status(400)
-        .json({ message: "Nyckel med denna label finns redan" });
-    }
-
-    //skapa en ny nyckel
-
-    if (!keyLabel || !location || !unitId) {
-      return res
-        .status(400)
-        .json({ message: "keyLabel eller location eller unitID saknas" });
-    }
-    const newKey = new KeyModel({
-      keyLabel,
-      location,
-      unit: unitId,
-    });
-
-    await newKey.save();
-    unit.keys.push(newKey._id);
-    await unit.save();
-
-    const populatedKey = await KeyModel.findById(newKey._id).populate(
-      "unit",
-      "name"
-    );
-    console.log("NEW skapad Key", populatedKey);
-    return res
-      .status(201)
-      .json({ message: "En ny nyckel har lagts", newKey: populatedKey });
-  } catch (error) {
-    console.error("Error vid skapande av ny nyckel", error);
-    return res.status(500).json({
-      message: "Server fel när användare försökt lägga till en ny nyckel",
-    });
-  }
-};
-
-// add key to user who has borrowed
-
-// export const addKeyToUser = async (req, res) => {
-//   // const { keyLabel, location } = req.body;
-//   const { chefId, keyId } = req.params;
-//   console.log("ChefID", chefId);
-//   console.log("keyId", keyId);
-
-//   try {
-//     if (!chefId) {
-//       return res.status(404).json({ message: "chefId ID krävs" });
-//     }
-
-//     if (!keyId) {
-//       return res.status(404).json({ message: "Nyckel ID krävs" });
-//     }
-//     const chef = await Chef.findById(chefId);
-//     console.log("chef ID", chef);
-//     const key = await KeyModel.findById(keyId);
-//     console.log("KEY ID", key);
-
-//     chef.keys.push(key._id);
-//     console.log("chef MED ALLA KEYS", chef.keys);
-//     // await newKey.save();
-//     // await chef.save();
-
-//     console.log("Key was added to chef", chef);
-//     return res.status(200).json("");
-//   } catch (error) {
-//     return res.status(500).json({
-//       message: "Server error, när man lägga en nyckel till användare",
-//     });
-//   }
-// };
-
-//test kod för att lägga key till users (chef,specialist) dynamiskt
-
-// Återanvändbar metod för att lägga till nyckel till olika användartyper
-// export const addKeyToUser = async (req, res) => {
-//   const { unitId, userId, keyId, userType } = req.params; // Lägg till userType för att identifiera användartypen
-//   console.log("Req.params", req.params);
-//   console.log("userType", userType);
-//   // Kontrollera om alla parametrar finns
-//   if (!unitId || !userId || !keyId || !userType) {
-//     return res
-//       .status(404)
-//       .json({ message: "Användar-ID, Nyckel-ID eller användartyp krävs" });
-//   }
-
-//   try {
-//     // Dynamiskt hitta användaren baserat på userType
-//     let user;
-//     switch (userType) {
-//       case "chefer":
-//         user = await Chef.findById(userId);
-//         break;
-//       case "specialister":
-//         user = await Specialist.findById(userId);
-//         break;
-
-//       default:
-//         return res.status(404).json({ message: "Ogiltig användartyp" });
-//     }
-
-//     if (!user) {
-//       return res.status(404).json({ message: "Användare inte funnen" });
-//     }
-
-//     const key = await KeyModel.findById(keyId);
-//     if (!key) {
-//       return res.status(404).json({ message: "Nyckel inte funnen" });
-//     }
-
-//     // Lägg till nyckeln i användarens lista
-//     user.keys.push(key._id);
-//     await user.save();
-
-//     return res.status(200).json({
-//       message: `Nyckeln har lagts till ${userType.slice(0, -1)}n`,
-//       user,
-//     });
-//   } catch (error) {
-//     console.error("Fel vid tilldelning av nyckel till användare", error);
-//     return res
-//       .status(500)
-//       .json({ message: "Serverfel vid tilldelning av nyckel" });
-//   }
-// };
 
 //Update key
 export const updateKey = async (req, res) => {

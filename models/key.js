@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const keySchema = new mongoose.Schema(
   {
     keyLabel: { type: String, unique: true, required: true },
-    location: String,
+    // location: String,
     qrCode: String, // base64 QR-kod
     unit: { type: mongoose.Schema.Types.ObjectId, ref: "Unit" },
     status: {
