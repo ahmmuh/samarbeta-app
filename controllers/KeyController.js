@@ -343,8 +343,6 @@ export const deleteKey = async (req, res) => {
   }
 };
 
-//Search keys by query
-// controllers/keyController.js
 export const searchKey = async (req, res) => {
   const { keyLabel } = req.query;
 
@@ -355,7 +353,9 @@ export const searchKey = async (req, res) => {
   try {
     const keys = await KeyModel.find({
       keyLabel: { $regex: keyLabel, $options: "i" },
-    });
+    })
+      .populate("unit", "name")
+      .populate("borrowedBy");
 
     if (keys.length === 0) {
       return res
@@ -369,9 +369,3 @@ export const searchKey = async (req, res) => {
     return res.status(500).json({ message: "Serverfel" });
   }
 };
-
-//get logs
-
-// export const getKeyLogs = async (req, res) => {
-//   const { keyId, userId } = req.body;
-// };

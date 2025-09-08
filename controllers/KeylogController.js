@@ -30,6 +30,32 @@ export const getAllKeyLogs = async (req, res) => {
 };
 
 // Search keyLogs by Query
+// export const searchKeyLogs = async (req, res) => {
+//   const { keyId } = req.params;
+
+//   if (!keyId) {
+//     return res.status(400).json({ message: "keyId saknas i förfrågan" });
+//   }
+
+//   try {
+//     const keylogs = await KeyLog.find({
+//       keyId: { $regex: keyId, $options: "i" },
+//     });
+
+//     if (keylogs.length === 0) {
+//       return res
+//         .status(404)
+//         .json({ message: "Ingen nyckel matchar sökningen." });
+//     }
+
+//     return res.status(200).json({ message: "Nycklar hittades", data: keylogs });
+//   } catch (error) {
+//     console.error("Fel vid sökning:", error.message);
+//     return res.status(500).json({ message: "Serverfel" });
+//   }
+// };
+
+// Search keyLogs by key (via _id eller keyLabel)
 export const searchKeyLogs = async (req, res) => {
   const { keyId } = req.params;
 
@@ -38,17 +64,33 @@ export const searchKeyLogs = async (req, res) => {
   }
 
   try {
-    const keylogs = await KeyLog.find({
-      keyId: { $regex: keyId, $options: "i" },
-    });
+    const keylogs = await KeyLog.find()
+      .populate({
+        path: "key",
+        match: {
+          $or: [
+            { _id: keyId }, // exakta ID
+            { keyLabel: { $regex: keyId, $options: "i" } },
+          ],
+        },
+        populate: { path: "unit", select: "name" },
+      })
+      .populate("user", "name");
 
-    if (keylogs.length === 0) {
+    const filteredLogs = keylogs.filter(
+      (log) => log.key !== null && log.user !== null
+    );
+
+    if (filteredLogs.length === 0) {
       return res
         .status(404)
         .json({ message: "Ingen nyckel matchar sökningen." });
     }
 
-    return res.status(200).json({ message: "Nycklar hittades", data: keylogs });
+    return res.status(200).json({
+      message: "Nyckelloggar hittades",
+      data: filteredLogs,
+    });
   } catch (error) {
     console.error("Fel vid sökning:", error.message);
     return res.status(500).json({ message: "Serverfel" });
