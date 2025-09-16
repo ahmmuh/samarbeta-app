@@ -1,9 +1,5 @@
 import express from "express";
-import {
-  checkInKey,
-  checkOutKeyAndAssignToUser,
-  displayBorrowedByUser,
-} from "../controllers/KeyController.js";
+import { displayBorrowedByUser } from "../controllers/KeyController.js";
 import {
   deleteUser,
   getAllUsers,
@@ -24,13 +20,5 @@ userRouter.get("/users/:userId", getToken, getUserById);
 userRouter.put("/users/:userId", getToken, updateUser);
 
 userRouter.get("/users/keys/:keyId/:userId", getToken, displayBorrowedByUser);
-
-userRouter.patch("/keys/:keyId/:userId/checkin", getToken, checkInKey);
-
-userRouter.patch(
-  "/keys/:keyId/:userId/checkout",
-  getToken,
-  checkOutKeyAndAssignToUser
-);
 
 export default userRouter;

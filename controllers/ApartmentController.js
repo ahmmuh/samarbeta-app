@@ -49,8 +49,8 @@ export const createApartment = async (req, res) => {
 };
 
 export const getAllApartments = async (req, res) => {
-  console.log("Called getToken när jag använder api/apartments");
-  console.log("Token i cookies: api/apartments", req.cookies.token);
+  // console.log("Called getToken när jag använder api/apartments");
+  // console.log("Token i cookies: api/apartments", req.cookies.token);
   try {
     const apartments = await Apartment.find().populate("assignedUnit", "name");
     res.json(apartments);

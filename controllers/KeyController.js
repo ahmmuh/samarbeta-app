@@ -73,9 +73,10 @@ export const displayBorrowedByUser = async (req, res) => {
 
 //Låna ut nycklar
 
-export const checkOutKeyAndAssignToUser = async (req, res) => {
+export const checkOutKey = async (req, res) => {
   const { keyId, userId } = req.params;
   console.log("User ID före anropet i checkOutKeyAndAssignToUser()", userId);
+  console.log("KEY ID före anropet i checkOutKeyAndAssignToUser()", keyId);
 
   if (!keyId || !userId) {
     return res.status(400).json({ message: "keyId  krävs eller userId" });
@@ -164,6 +165,8 @@ export const checkOutKeyAndAssignToUser = async (req, res) => {
 
 export const checkInKey = async (req, res) => {
   const { keyId, userId } = req.params;
+  console.log("User ID före anropet i checkOutKeyAndAssignToUser()", userId);
+  console.log("KEY ID före anropet i checkOutKeyAndAssignToUser()", keyId);
   if (!userId || userId === "null" || userId === "undefined") {
     return res.status(400).json({ message: "Ingen lånetagare vald" });
   }

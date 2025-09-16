@@ -45,6 +45,7 @@ export const getUserById = async (req, res) => {
   }
 };
 
+//NY kod:
 export const updateUser = async (req, res) => {
   const { userId } = req.params;
   const updateData = req.body;
@@ -62,7 +63,7 @@ export const updateUser = async (req, res) => {
     // Om användaren byter enhet
     if (updateData.unit && user.unit?.toString() !== updateData.unit) {
       // Kolla att nya enheten finns
-      const newUnit = await Unit.findById(updateData.unit);
+      const newUnit = await Unit.findById(updateData.unit).populate("users");
       if (!newUnit) {
         return res
           .status(404)
@@ -72,6 +73,43 @@ export const updateUser = async (req, res) => {
       // Ta bort användaren från gamla enheten
       if (user.unit) {
         await Unit.findByIdAndUpdate(user.unit, { $pull: { users: userId } });
+      }
+
+      // Hitta befintlig enhetschef i den nya enheten (som inte är den aktuella användaren)
+      const existingChef = newUnit.users.find(
+        (u) =>
+          u._id.toString() !== userId &&
+          (Array.isArray(u.role)
+            ? u.role.includes("Enhetschef")
+            : u.role === "Enhetschef")
+      );
+
+      if (existingChef) {
+        // Ta bort enhetschefen från enheten
+        await Unit.findByIdAndUpdate(newUnit._id, {
+          $pull: { users: existingChef._id },
+        });
+
+        // Ta bort rollen "Enhetschef" från användarens roll-array
+        const updatedRoles = existingChef.role.filter(
+          (r) => r !== "Enhetschef"
+        );
+
+        // Kontrollera om användaren har andra roller som kräver unit
+        const rolesRequiringUnit = [
+          "Enhetschef",
+          "Flyttstädansvarig",
+          "Specialare",
+          "Lokalvårdare",
+        ];
+        const hasOtherRoles = updatedRoles.some((r) =>
+          rolesRequiringUnit.includes(r)
+        );
+
+        await User.findByIdAndUpdate(existingChef._id, {
+          role: updatedRoles,
+          unit: hasOtherRoles ? existingChef.unit : null,
+        });
       }
 
       // Lägg till användaren i nya enheten
@@ -85,12 +123,81 @@ export const updateUser = async (req, res) => {
     await user.save();
 
     console.log("En användare uppdaterats", user);
-    return res.status(200).json({ message: "user har uppdaterats", user });
+    return res.status(200).json({ message: "User har uppdaterats", user });
   } catch (error) {
     console.error("Fel vid uppdatering av user:", error);
     return res.status(500).json({ message: "Internt serverfel" });
   }
 };
+//Gammal kod:
+// export const updateUser = async (req, res) => {
+//   const { userId } = req.params;
+//   const updateData = req.body;
+
+//   if (!userId) {
+//     return res.status(400).json({ message: "userId saknas" });
+//   }
+
+//   try {
+//     const user = await User.findById(userId).select("-password");
+//     if (!user) {
+//       return res.status(404).json({ message: "Kunde inte hitta user" });
+//     }
+
+//     // Om användaren byter enhet
+//     if (updateData.unit && user.unit?.toString() !== updateData.unit) {
+//       // Kolla att nya enheten finns
+//       const newUnit = await Unit.findById(updateData.unit).populate("users");
+//       if (!newUnit) {
+//         return res
+//           .status(404)
+//           .json({ message: "Kunde inte hitta nya enheten" });
+//       }
+
+//       // Ta bort användaren från gamla enheten
+//       if (user.unit) {
+//         await Unit.findByIdAndUpdate(user.unit, { $pull: { users: userId } });
+//       }
+
+//       // Hitta befintlig enhetschef i den nya enheten
+//       const existingChef = newUnit.users.find((u) =>
+//         Array.isArray(u.role)
+//           ? u.role.includes("Enhetschef")
+//           : u.role === "Enhetschef"
+//       );
+
+//       if (existingChef) {
+//         // Ta bort enhetschefen från enheten
+//         await Unit.findByIdAndUpdate(newUnit._id, {
+//           $pull: { users: existingChef._id },
+//         });
+//         // Ta bort rollen "Enhetschef" från användarens roll-array
+//         const updatedRoles = existingChef.role.filter(
+//           (r) => r !== "Enhetschef"
+//         );
+//         await User.findByIdAndUpdate(existingChef._id, {
+//           role: updatedRoles,
+//           unit: updatedRoles.length === 0 ? null : existingChef.unit,
+//         });
+//       }
+
+//       // Lägg till användaren i nya enheten
+//       await Unit.findByIdAndUpdate(updateData.unit, {
+//         $addToSet: { users: userId },
+//       });
+//     }
+
+//     // Uppdatera användarens fält
+//     Object.assign(user, updateData);
+//     await user.save();
+
+//     console.log("En användare uppdaterats", user);
+//     return res.status(200).json({ message: "user har uppdaterats", user });
+//   } catch (error) {
+//     console.error("Fel vid uppdatering av user:", error);
+//     return res.status(500).json({ message: "Internt serverfel" });
+//   }
+// };
 
 // export const updateUser = async (req, res) => {
 //   const { userId } = req.params;
