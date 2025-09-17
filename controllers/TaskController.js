@@ -79,7 +79,10 @@ export const assignTaskToUnit = async (req, res) => {
 // ---------------------------
 export const getAllTasks = async (req, res) => {
   try {
-    const tasks = await Task.find().populate("unit");
+    const tasks = await Task.find().populate({
+      path: "unit",
+      select: "name",
+    });
     return res.status(200).json(tasks);
   } catch (error) {
     console.error("Fel vid getAllTasks:", error.message);
@@ -125,7 +128,10 @@ export const updateTask = async (req, res) => {
 export const getTaskById = async (req, res) => {
   try {
     const { taskId } = req.params;
-    const task = await Task.findById(taskId);
+    const task = await Task.findById(taskId).populate({
+      path: "unit",
+      select: "name",
+    });
     if (!task) return res.status(404).json({ message: "Task not found" });
     return res.status(200).json(task);
   } catch (error) {

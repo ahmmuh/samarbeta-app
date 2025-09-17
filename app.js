@@ -10,7 +10,7 @@ import keyRoute from "./routes/keyRoute.js";
 import userRouter from "./routes/userRoute.js";
 import keyLogRoute from "./routes/keyLogsRoute.js";
 import apartmentRoute from "./routes/apartmentRoute.js";
-// import cronJobRoute from "./routes/cronJobRoute.js";
+import cronJobRoute from "./routes/cronJobRoute.js";
 import qrCodeRoute from "./routes/qrCodeROute.js";
 import authRoute from "./routes/authRoute.js";
 import { getToken } from "./middleware/authMiddleware.js";
@@ -43,7 +43,7 @@ app.use("/api", userRouter);
 app.get("*", (req, res) => {
   res.status(200).json({ Message: "HELLO WORLD!" });
 });
-// app.use("/api/cronjobs", cronJobRoute);
+app.use("/api/cronjobs", cronJobRoute);
 app.listen(PORT, () => {
   console.log(`The Server listening on port ${PORT}`);
   getConnection();
