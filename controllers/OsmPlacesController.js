@@ -15,7 +15,7 @@ export const getPlaces = async (req, res) => {
       params: {
         q: query, // sökord
         format: "json",
-        limit: 10,
+        limit: 15,
         addressdetails: 1,
         namedetails: 1,
       },

@@ -16,13 +16,13 @@ export const signUp = async (req, res, next) => {
     //Check Email
     const existingEmail = await User.findOne({ email });
     if (existingEmail)
-      return res.status(400).json({ message: "Email already  exists" });
+      return res.status(400).json({ message: "E-post finns redan" });
 
     //Check Phone
 
     const existingPhone = await User.findOne({ phone });
     if (existingPhone)
-      return res.status(400).json({ message: "Phone already  exists" });
+      return res.status(400).json({ message: "Telefonnummer finns redan" });
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
