@@ -31,6 +31,7 @@ const userSchema = new mongoose.Schema({
   },
 
   keys: [{ type: mongoose.Schema.Types.ObjectId, ref: "KeyModel" }],
+  expoPushToken: String,
 });
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);
