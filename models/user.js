@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema({
   phone: { type: Number, required: true, unique: true },
   username: { type: String, unique: true, required: true },
   password: { type: String, required: true },
-  ssnLastFour: {
+  LastFour: {
     type: String,
     required: true,
     length: 4, //de 4 sista siffror på persnonummer
@@ -36,6 +36,24 @@ const userSchema = new mongoose.Schema({
     ref: "Unit",
   },
 
+  currentAddress: { type: String, default: "" },
+  currentLocation: {
+    type: {
+      type: String,
+      enum: ["Point"],
+      default: "Point",
+    },
+    coordinates: { type: [Number], default: undefined }, // [longitude, latitude]
+  },
+  allowedWorkplaces: [
+    {
+      address: { type: String },
+      location: {
+        type: { type: String, enum: ["Point"], default: "Point" },
+        coordinates: { type: [Number], required: true },
+      },
+    },
+  ],
   keys: [{ type: mongoose.Schema.Types.ObjectId, ref: "KeyModel" }],
   expoPushToken: String,
 });

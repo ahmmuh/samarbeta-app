@@ -5,10 +5,10 @@ import {
   getUserClocks,
 } from "../controllers/clockController.js";
 
-const router = express.Router();
+const clokcRouter = express.Router();
 
-router.post("/in", clockIn);
-router.post("/out", clockOut);
-router.get("/:userId", getUserClocks);
+router.post("/clocks/in", clockIn);
+router.post("/clocks/out", clockOut);
+router.get("/clocks/:userId", getUserClocks);
 
-export default router;
+export default clokcRouter;

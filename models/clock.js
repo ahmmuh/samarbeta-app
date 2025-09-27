@@ -16,6 +16,18 @@ const clockSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        default: undefined,
+      },
+    },
     totalMinutes: {
       type: Number,
       default: 0,
