@@ -6,6 +6,12 @@ const userSchema = new mongoose.Schema({
   phone: { type: Number, required: true, unique: true },
   username: { type: String, unique: true, required: true },
   password: { type: String, required: true },
+  ssnLastFour: {
+    type: String,
+    required: true,
+    length: 4, //de 4 sista siffror på persnonummer
+    unique: true,
+  },
 
   isDeleted: {
     type: Boolean,
