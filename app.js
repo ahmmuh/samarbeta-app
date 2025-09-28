@@ -16,7 +16,7 @@ import authRoute from "./routes/authRoute.js";
 import { getToken } from "./middleware/authMiddleware.js";
 import addressRoute from "./routes/addressRoute.js";
 import placesRoute from "./routes/placeRoute.js";
-import clokcRouter from "./routes/clockRoute.js";
+import clokcRoute from "./routes/clockRoute.js";
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
@@ -34,7 +34,7 @@ app.use("/api", authRoute);
 
 // app.use("/api", addressRoute);
 app.use("/api", apartmentRoute);
-app.use("/api", clokcRouter);
+app.use("/api", clokcRoute);
 
 app.use("/api", unitRouter);
 app.use("/api", taskRoute);

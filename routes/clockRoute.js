@@ -3,12 +3,12 @@ import {
   clockIn,
   clockOut,
   getUserClocks,
-} from "../controllers/clockController.js";
+} from "../controllers/ClockController.js";
 
-const clokcRouter = express.Router();
+const clokcRoute = express.Router();
 
-router.post("/clocks/in", clockIn);
-router.post("/clocks/out", clockOut);
-router.get("/clocks/:userId", getUserClocks);
+clokcRoute.post("/clocks/in", clockIn);
+clokcRoute.post("/clocks/out", clockOut);
+clokcRoute.get("/clocks/:userId", getUserClocks);
 
-export default clokcRouter;
+export default clokcRoute;

@@ -6,10 +6,11 @@ const userSchema = new mongoose.Schema({
   phone: { type: Number, required: true, unique: true },
   username: { type: String, unique: true, required: true },
   password: { type: String, required: true },
-  LastFour: {
+  lastFour: {
     type: String,
     required: true,
-    length: 4, //de 4 sista siffror på persnonummer
+    minlength: 4,
+    maxlength: 4,
     unique: true,
   },
 
@@ -43,7 +44,7 @@ const userSchema = new mongoose.Schema({
       enum: ["Point"],
       default: "Point",
     },
-    coordinates: { type: [Number], default: undefined }, // [longitude, latitude]
+    coordinates: { type: [Number] }, // [longitude, latitude]
   },
   allowedWorkplaces: [
     {
@@ -58,6 +59,9 @@ const userSchema = new mongoose.Schema({
   expoPushToken: String,
 });
 
+// Gör modellen geospatial-ready
+userSchema.index({ currentLocation: "2dsphere" });
+userSchema.index({ "allowedWorkplaces.location": "2dsphere" });
 const User = mongoose.models.User || mongoose.model("User", userSchema);
 
 export default User;
