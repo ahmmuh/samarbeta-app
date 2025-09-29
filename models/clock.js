@@ -7,6 +7,10 @@ const clockSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    workplace: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "WorkPlace",
+    },
     clockInDate: {
       type: Date,
       required: true,
@@ -25,9 +29,10 @@ const clockSchema = new mongoose.Schema(
       },
       coordinates: {
         type: [Number], // [longitude, latitude]
-        default: undefined,
+        required: true,
       },
     },
+
     totalMinutes: {
       type: Number,
       default: 0,
@@ -48,7 +53,7 @@ clockSchema.virtual("duration").get(function () {
   return null;
 });
 
-// Räkna ut totalMinutes automatiskt
+// Beräkna totalMinutes automatiskt
 clockSchema.pre("save", function (next) {
   if (this.clockInDate && this.clockOutDate) {
     this.totalMinutes = Math.round(
@@ -58,4 +63,8 @@ clockSchema.pre("save", function (next) {
   next();
 });
 
-export default mongoose.model("Clock", clockSchema);
+clockSchema.index({ location: "2dsphere" });
+
+const Clock = mongoose.models.Clock || mongoose.model("Clock", clockSchema);
+
+export default Clock;

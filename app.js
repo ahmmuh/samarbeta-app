@@ -17,6 +17,7 @@ import { getToken } from "./middleware/authMiddleware.js";
 import addressRoute from "./routes/addressRoute.js";
 import placesRoute from "./routes/placeRoute.js";
 import clokcRoute from "./routes/clockRoute.js";
+import workplaceRoute from "./routes/workplaceRoute.js";
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
@@ -37,6 +38,7 @@ app.use("/api", apartmentRoute);
 app.use("/api", clokcRoute);
 
 app.use("/api", unitRouter);
+app.use("/api", workplaceRoute);
 app.use("/api", taskRoute);
 app.use("/api", placesRoute);
 app.use("/api", qrCodeRoute);
