@@ -1,17 +1,25 @@
-import Unit from "../models/unit";
-import WorkPlace from "../models/WorkPlace";
+import { geocodeAddress } from "../lib/geocode/geocoder.js";
+import Unit from "../models/unit.js";
+import WorkPlace from "../models/WorkPlace.js";
 
-//Skapa ny arbetsplats
-
+// Skapa ny arbetsplats
 export const createWorkPlace = async (req, res) => {
   try {
-    const { name, address, location } = req.body;
+    const { name, address } = req.body;
 
-    if (!name || !address || !location?.coordinates) {
-      return res.status(400).json({ message: "Namn, adress och plats krävs" });
+    if (!name || !address) {
+      return res.status(400).json({ message: "Namn och adress krävs" });
     }
 
-    // Kolla om arbetsplats redan finns på samma adress och koordinater
+    // Geokoda adressen automatiskt
+    const [lng, lat] = await geocodeAddress(address);
+
+    const location = {
+      type: "Point",
+      coordinates: [lng, lat],
+    };
+
+    // Kolla om arbetsplats redan finns
     const existingWorkPlace = await WorkPlace.findOne({
       address,
       "location.coordinates": location.coordinates,
@@ -43,13 +51,21 @@ export const createWorkPlace = async (req, res) => {
 export const addWorkPlaceToUnit = async (req, res) => {
   try {
     const { unitId } = req.params;
-    const { name, address, location } = req.body;
+    const { name, address } = req.body;
+
+    if (!name || !address) {
+      return res.status(400).json({ message: "Namn och adress krävs" });
+    }
 
     const unit = await Unit.findById(unitId);
     if (!unit)
       return res.status(404).json({ message: "Enheten hittades inte" });
 
-    // Kolla om arbetsplats redan finns (på samma adress)
+    // Geokoda adressen
+    const [lng, lat] = await geocodeAddress(address);
+    const location = { type: "Point", coordinates: [lng, lat] };
+
+    // Kolla om arbetsplats redan finns
     const existingWorkPlace = await WorkPlace.findOne({
       address,
       "location.coordinates": location.coordinates,
@@ -63,16 +79,28 @@ export const addWorkPlaceToUnit = async (req, res) => {
     }
 
     // Skapa ny arbetsplats
-    const newWorkplace = new WorkPlace({ name, address, location });
-    await newWorkplace.save();
+    const newWorkPlace = new WorkPlace({ name, address, location });
+    await newWorkPlace.save();
 
-    unit.workPlaces.push(newWorkplace._id);
+    unit.workPlaces.push(newWorkPlace._id);
     await unit.save();
 
     res.status(201).json({
       message: "Arbetsplats tillagd i enheten",
-      workPlace: newWorkplace,
+      workPlace: newWorkPlace,
     });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+// Hämta alla arbetsplatser
+export const getAllWorkPlaces = async (req, res) => {
+  try {
+    const workplaces = await WorkPlace.find();
+    res.status(200).json(workplaces);
   } catch (error) {
     res
       .status(500)
@@ -83,7 +111,7 @@ export const addWorkPlaceToUnit = async (req, res) => {
 // Hämta alla arbetsplatser nära en given plats
 export const getNearbyWorkPlaces = async (req, res) => {
   try {
-    const { lng, lat, maxDistance = 200 } = req.query; // maxDistance i meter
+    const { lng, lat, maxDistance = 200 } = req.query;
 
     if (!lng || !lat) {
       return res.status(400).json({ message: "lng och lat krävs" });
@@ -96,7 +124,7 @@ export const getNearbyWorkPlaces = async (req, res) => {
             type: "Point",
             coordinates: [parseFloat(lng), parseFloat(lat)],
           },
-          $maxDistance: parseInt(maxDistance), // tex 200 meter
+          $maxDistance: parseInt(maxDistance),
         },
       },
     });
@@ -115,7 +143,6 @@ export const getNearbyWorkPlaces = async (req, res) => {
   }
 };
 
-//Hämta arbetsplats via ID
 // Hämta arbetsplats via ID
 export const getWorkPlaceById = async (req, res) => {
   try {
@@ -133,10 +160,9 @@ export const getWorkPlaceById = async (req, res) => {
 
     res.status(200).json(workplace);
   } catch (error) {
-    res.status(500).json({
-      message: "Internal server error",
-      error: error.message,
-    });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };
 

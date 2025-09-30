@@ -1,11 +1,11 @@
 import { populate } from "dotenv";
-import { geocodeAddress } from "../helperFunction/helper.js";
 import Apartment from "../models/apartment.js";
 import KeyModel from "../models/key.js";
 import KeyLog from "../models/keyLog.js";
 import Task from "../models/task.js";
 import Unit from "../models/unit.js";
 import User from "../models/user.js";
+import { geocodeAddress } from "../lib/geocode/geocoder.js";
 
 //Lägg till ny ENHET
 export const createUnit = async (req, res) => {

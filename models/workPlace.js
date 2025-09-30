@@ -1,24 +1,31 @@
 import mongoose from "mongoose";
 
-const workplaceSchema = new mongoose.Schema({
-  name: { type: String, required: true }, // tex "ICA Maxi", "Kontor A"
-  address: { type: String, required: true },
+const workplaceSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true }, // t.ex. "ICA Maxi", "Kontor A"
+    address: { type: String, required: true },
 
-  location: {
-    type: {
-      type: String,
-      enum: ["Point"],
-      default: "Point",
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+        required: true,
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        required: true,
+      },
     },
-    coordinates: {
-      type: [Number], // [longitude, latitude]
-      required: true,
-    },
+
+    cleaners: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
+  {
+    timestamps: true, // Lägg till createdAt och updatedAt automatiskt
+  }
+);
 
-  cleaners: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-});
-
+// Skapa 2dsphere index för geospatiala queries ($near, $geoWithin)
 workplaceSchema.index({ location: "2dsphere" });
 
 const WorkPlace =

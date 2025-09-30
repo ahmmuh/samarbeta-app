@@ -75,9 +75,10 @@ const userSchema = new mongoose.Schema({
   username: { type: String, unique: true, required: true },
   password: { type: String, required: true },
 
+  //används för stämpla in/ut
   lastFour: {
     type: String,
-    required: true,
+    // required: true,
     minlength: 4,
     maxlength: 4,
     unique: true,
