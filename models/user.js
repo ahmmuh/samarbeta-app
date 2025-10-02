@@ -53,6 +53,11 @@ userSchema.virtual("assignedWorkplaces", {
   foreignField: "cleaners",
 });
 
+userSchema.virtual("clocks", {
+  ref: "Clock",
+  localField: "_id",
+  foreignField: "user", // viktigt!
+});
 const User = mongoose.models.User || mongoose.model("User", userSchema);
 
 export default User;

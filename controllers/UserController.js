@@ -9,13 +9,27 @@ export const getAllUsers = async (req, res) => {
       .select("-password")
       .populate("unit")
       .populate("keys")
-      .populate("assignedWorkplaces");
+      .populate("assignedWorkplaces")
+      .populate("clocks");
 
+    // const usersWithClocks = await Promise.all(
+    //   users.map(async (user) => {
+    //     const clocks = await Clock.find({ user: user._id }).sort({
+    //       clockInDate: -1,
+    //     });
+
+    //     return {
+    //       ...user.toObject(),
+    //       clocks,
+    //     };
+    //   })
+    // );
     return res.status(200).json(users);
   } catch (error) {
     console.error(error);
     res.status(500).json({
-      message: "Serverfel vid hämtning av users (chefer och specialister",
+      message:
+        "Serverfel vid hämtning av användare (chefer  specialare + lokalvårdare",
     });
   }
 };
