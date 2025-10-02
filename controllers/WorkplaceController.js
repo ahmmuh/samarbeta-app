@@ -1,5 +1,6 @@
 import { geocodeAddress } from "../lib/geocode/geocoder.js";
 import Unit from "../models/unit.js";
+import User from "../models/user.js";
 import WorkPlace from "../models/WorkPlace.js";
 
 // Skapa ny arbetsplats
@@ -99,7 +100,10 @@ export const addWorkPlaceToUnit = async (req, res) => {
 // Hämta alla arbetsplatser
 export const getAllWorkPlaces = async (req, res) => {
   try {
-    const workplaces = await WorkPlace.find();
+    const workplaces = await WorkPlace.find().populate({
+      path: "cleaners",
+      select: "-password",
+    });
     res.status(200).json(workplaces);
   } catch (error) {
     res
@@ -108,31 +112,122 @@ export const getAllWorkPlaces = async (req, res) => {
   }
 };
 
+//Lägga användare på en arbetsplats
+// export const assignUserToWorkPlace = async (req, res) => {
+//   try {
+//     const { workplaceId } = req.params;
+//     const { userId } = req.body;
+
+//     if (!workplaceId || !userId) {
+//       return res.status(400).json({ message: "workplaceId och userId krävs" });
+//     }
+
+//     const workPlace = await WorkPlace.findById(workplaceId);
+//     if (!workPlace) {
+//       return res.status(404).json({ message: "Arbetsplatsen hittades inte" });
+//     }
+
+//     const user = await User.findById(userId).select("-password");
+//     if (!user) {
+//       return res.status(404).json({ message: "Användaren hittades inte" });
+//     }
+
+//     // Lägg till användaren i cleaners[] om hen inte redan finns där
+//     if (!workPlace.cleaners.includes(user._id)) {
+//       workPlace.cleaners.push(user._id);
+//       await workPlace.save();
+//     }
+
+//     console.log("Tilldelad workplace med användare", workPlace, user);
+//     return res.status(200).json({
+//       message: "Användaren har tilldelats arbetsplatsen",
+//       workPlace,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ message: "Serverfel", error: error.message });
+//   }
+// };
+//Lägga användare på en arbetsplats
+export const assignUserToWorkPlace = async (req, res) => {
+  try {
+    const { workplaceId } = req.params;
+    const { userId } = req.body;
+
+    if (!workplaceId || !userId) {
+      return res.status(400).json({ message: "workplaceId och userId krävs" });
+    }
+
+    const workPlace = await WorkPlace.findById(workplaceId);
+    if (!workPlace) {
+      return res.status(404).json({ message: "Arbetsplatsen hittades inte" });
+    }
+
+    const user = await User.findById(userId).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "Användaren hittades inte" });
+    }
+
+    // Lägg till användaren i cleaners[] om hen inte redan finns där
+    if (!workPlace.cleaners.includes(user._id)) {
+      workPlace.cleaners.push(user._id);
+      await workPlace.save();
+    }
+
+    // Populera cleaners innan vi skickar tillbaka
+    const populatedWorkPlace = await WorkPlace.findById(workplaceId).populate({
+      path: "cleaners",
+      select: "-password",
+    });
+
+    return res.status(200).json({
+      message: "Användaren har tilldelats arbetsplatsen",
+      workPlace: populatedWorkPlace,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Serverfel", error: error.message });
+  }
+};
+
 // Hämta alla arbetsplatser nära en given plats
 export const getNearbyWorkPlaces = async (req, res) => {
   try {
-    const { lng, lat, maxDistance = 200 } = req.query;
+    const userId = req.user.id; // från auth middleware
+    const { lat, lng } = req.body; // GPS från klienten
+    const maxDistance = 200; // standard (meter)
 
-    if (!lng || !lat) {
-      return res.status(400).json({ message: "lng och lat krävs" });
+    if (!lat || !lng) {
+      return res.status(400).json({ message: "GPS-position krävs" });
     }
 
+    // Hämta användarens arbetsplatser (bara deras IDs)
+    const user = await User.findById(userId).populate("workplaces");
+    if (!user || !user.workplaces.length) {
+      return res.status(404).json({ message: "Inga arbetsplatser tilldelade" });
+    }
+
+    // Hämta ID:n på arbetsplatserna
+    const workplaceIds = user.workplaces.map((wp) => wp._id);
+
+    // Använd MongoDB $near för att hitta arbetsplatser nära användaren
     const nearbyWorkPlaces = await WorkPlace.find({
+      _id: { $in: workplaceIds }, // bara användarens arbetsplatser
       location: {
         $near: {
           $geometry: {
             type: "Point",
             coordinates: [parseFloat(lng), parseFloat(lat)],
           },
-          $maxDistance: parseInt(maxDistance),
+          $maxDistance: maxDistance,
         },
       },
     });
 
     if (!nearbyWorkPlaces.length) {
-      return res
-        .status(404)
-        .json({ message: "Inga arbetsplatser nära positionen" });
+      return res.status(404).json({
+        message: "Du befinner dig inte nära någon av dina arbetsplatser",
+      });
     }
 
     res.status(200).json(nearbyWorkPlaces);
@@ -152,7 +247,10 @@ export const getWorkPlaceById = async (req, res) => {
       return res.status(400).json({ message: "workplaceId saknas" });
     }
 
-    const workplace = await WorkPlace.findById(workplaceId);
+    const workplace = await WorkPlace.findById(workplaceId).populate({
+      path: "cleaners",
+      select: "-password",
+    });
 
     if (!workplace) {
       return res.status(404).json({ message: "Arbetsplats hittades inte" });
@@ -205,6 +303,71 @@ export const deleteWorkplace = async (req, res) => {
     await WorkPlace.findByIdAndDelete(workplaceId);
 
     res.status(200).json({ message: "Arbetsplats raderad" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+//Ta bort tilldelad användare från en arbetsplats:
+
+// export const removeUserFromWorkPlace = async (req, res) => {
+//   try {
+//     const { workplaceId } = req.params;
+//     const { userId } = req.body;
+
+//     if (!userId) return res.status(400).json({ message: "userId saknas" });
+
+//     const updatedWorkPlace = await WorkPlace.findByIdAndUpdate(
+//       workplaceId,
+//       { $pull: { cleaners: userId } }, // tar bort userId från arrayen
+//       { new: true }
+//     );
+
+//     if (!updatedWorkPlace) {
+//       return res.status(404).json({ message: "Arbetsplatsen hittades inte" });
+//     }
+
+//     res
+//       .status(200)
+//       .json({ message: "Användare borttagen", workPlace: updatedWorkPlace });
+//   } catch (error) {
+//     res
+//       .status(500)
+//       .json({ message: "Internal server error", error: error.message });
+//   }
+// };
+// Ta bort tilldelad användare från en arbetsplats
+export const removeUserFromWorkPlace = async (req, res) => {
+  try {
+    const { workplaceId, userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ message: "userId saknas" });
+    }
+
+    // Ta bort userId från cleaners-arrayen
+    await WorkPlace.findByIdAndUpdate(
+      workplaceId,
+      { $pull: { cleaners: userId } },
+      { new: true }
+    );
+
+    // Hämta arbetsplatsen igen och populera cleaners
+    const updatedWorkPlace = await WorkPlace.findById(workplaceId).populate({
+      path: "cleaners",
+      select: "-password",
+    });
+
+    if (!updatedWorkPlace) {
+      return res.status(404).json({ message: "Arbetsplatsen hittades inte" });
+    }
+
+    res.status(200).json({
+      message: "Användare borttagen",
+      workPlace: updatedWorkPlace,
+    });
   } catch (error) {
     res
       .status(500)

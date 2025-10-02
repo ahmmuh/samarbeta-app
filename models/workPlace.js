@@ -18,14 +18,15 @@ const workplaceSchema = new mongoose.Schema(
       },
     },
 
+    // Lista med användare (cleaners) som är tilldelade arbetsplatsen
     cleaners: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   {
-    timestamps: true, // Lägg till createdAt och updatedAt automatiskt
+    timestamps: true, // createdAt och updatedAt
   }
 );
 
-// Skapa 2dsphere index för geospatiala queries ($near, $geoWithin)
+// Skapa 2dsphere-index för geospatiala queries
 workplaceSchema.index({ location: "2dsphere" });
 
 const WorkPlace =

@@ -9,6 +9,6 @@ const clokcRoute = express.Router();
 
 clokcRoute.post("/clocks/in", clockIn);
 clokcRoute.post("/clocks/out", clockOut);
-clokcRoute.get("/clocks/:userId", getUserClocks);
+clokcRoute.get("/clocks/user/:lastFour", getUserClocks);
 
 export default clokcRoute;
