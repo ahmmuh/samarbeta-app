@@ -18,6 +18,7 @@ import addressRoute from "./routes/addressRoute.js";
 import placesRoute from "./routes/placeRoute.js";
 import clokcRoute from "./routes/clockRoute.js";
 import workplaceRoute from "./routes/workplaceRoute.js";
+import machineRouter from "./routes/machineRoute.js";
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
@@ -37,6 +38,7 @@ app.use("/api", authRoute);
 app.use("/api", apartmentRoute);
 app.use("/api", clokcRoute);
 
+app.use("/api", machineRouter);
 app.use("/api", unitRouter);
 app.use("/api", workplaceRoute);
 app.use("/api", taskRoute);
