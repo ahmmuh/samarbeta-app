@@ -128,7 +128,7 @@ export const getMachineById = async (req, res) => {
 // Uppdatera maskin
 export const updateMachine = async (req, res) => {
   const { machineId } = req.params;
-  const { name } = req.body;
+  const { name, isAvailable } = req.body; // 👈 ta emot isAvailable
 
   try {
     const machine = await Machine.findById(machineId);
@@ -136,6 +136,8 @@ export const updateMachine = async (req, res) => {
       return res.status(404).json({ message: "Maskin hittades inte" });
 
     if (name) machine.name = name;
+    if (typeof isAvailable === "boolean") machine.isAvailable = isAvailable; // 👈 uppdatera checkbox
+
     await machine.save();
 
     return res.status(200).json({ message: "Maskin uppdaterad", machine });
