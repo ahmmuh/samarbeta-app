@@ -18,6 +18,12 @@ const machineSchema = new mongoose.Schema(
     },
 
     isAvailable: { type: Boolean, default: true }, // true = ledig, false = utlånad
+    borrowedFrom: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "WorkPlace",
+      default: null,
+    },
+
     borrowedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

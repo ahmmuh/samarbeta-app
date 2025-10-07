@@ -114,7 +114,9 @@ export const signIn = async (req, res, next) => {
 export const getCurrentUser = async (req, res) => {
   try {
     // req.user sätts av getToken-middleware
-    const user = await User.findById(req.user._id).select("-password");
+    const user = await User.findById(req.user._id)
+      .select("-password")
+      .populate("unit");
 
     if (!user) {
       return res.status(404).json({ message: "Användare hittades inte" });

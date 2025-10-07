@@ -6,9 +6,10 @@ import {
   updateMachine,
   deleteMachine,
   borrowMachine,
-  returnMachine,
   searchMachines,
+  returnMachine,
 } from "../controllers/machineController.js";
+import { getToken } from "../middleware/authMiddleware.js";
 
 const machineRouter = express.Router();
 
@@ -21,7 +22,7 @@ machineRouter.put("/machines/:machineId", updateMachine); // body: { name }
 machineRouter.delete("/machines/:machineId", deleteMachine);
 
 // Utlåning / återlämning
-machineRouter.post("/machines/:machineId/borrow", borrowMachine); // body: { userId }
-machineRouter.post("/machines/:machineId/return", returnMachine);
+machineRouter.post("/machines/:machineId/borrow", getToken, borrowMachine); // body: { userId }
+machineRouter.post("/machines/:machineId/return", getToken, returnMachine);
 
 export default machineRouter;

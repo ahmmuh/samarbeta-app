@@ -15,7 +15,8 @@ export const clockIn = async (req, res) => {
     const user = await User.findOne({ lastFour }).populate(
       "assignedWorkplaces"
     );
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user)
+      return res.status(404).json({ message: "Denna användare hittades inte" });
 
     // Kolla om user redan är inne
     const activeClock = await Clock.findOne({
@@ -86,7 +87,8 @@ export const clockOut = async (req, res) => {
     const user = await User.findOne({ lastFour }).populate(
       "assignedWorkplaces"
     );
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user)
+      return res.status(404).json({ message: "Denna användare hittades inte" });
 
     const clock = await Clock.findOne({
       user: user._id,
