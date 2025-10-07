@@ -31,12 +31,6 @@ export const createMachine = async (req, res) => {
     machine.qrCode = qrCode;
     await machine.save();
 
-    await MachineLog.create({
-      machineId: machine._id,
-      action: "created",
-      details: `Maskin '${machine.name}' skapades i enhet '${unit.name}'`,
-    });
-
     const populatedMachine = await Machine.findById(machine._id).populate(
       "unitId",
       "name"
@@ -101,6 +95,9 @@ export const getMachineById = async (req, res) => {
 export const updateMachine = async (req, res) => {
   const { machineId } = req.params;
   const { name } = req.body;
+  console.log("updateMachine → machineId:", machineId);
+
+  console.log("updateMachine → req.body:", req.body);
 
   try {
     const machine = await Machine.findById(machineId);
@@ -111,11 +108,7 @@ export const updateMachine = async (req, res) => {
     if (name) machine.name = name;
     await machine.save();
 
-    await MachineLog.create({
-      machineId,
-      action: "updated",
-      details: `Maskin uppdaterad från '${oldName}' till '${machine.name}'`,
-    });
+    console.log("🟢 Machine saved:", machine._id);
 
     return res.status(200).json({ message: "Maskin uppdaterad", machine });
   } catch (error) {
@@ -133,12 +126,6 @@ export const deleteMachine = async (req, res) => {
     const machine = await Machine.findByIdAndDelete(machineId);
     if (!machine)
       return res.status(404).json({ message: "Maskin hittades inte" });
-
-    await MachineLog.create({
-      machineId,
-      action: "deleted",
-      details: `Maskin '${machine.name}' togs bort`,
-    });
 
     return res.status(200).json({ message: "Maskin borttagen", machine });
   } catch (error) {
@@ -173,11 +160,10 @@ export const borrowMachine = async (req, res) => {
 
     // Skapa logg
     await MachineLog.create({
-      machine: machine._id, // <-- krävs
-      action: "BORROWED", // <-- enum match
-      performedBy: req.user._id, // den som utför handlingen
-      unit: machine.unitId || null,
-      timestamp: new Date(),
+      machine: machine._id,
+      action: "BORROWED",
+      performedBy: req.user?._id || null, // vem som lånar
+      unit: machine.unitId?._id || null,
     });
 
     return res.status(200).json({ message: "Maskin utlånad", machine });
@@ -244,9 +230,8 @@ export const returnMachine = async (req, res) => {
     await MachineLog.create({
       machine: machine._id,
       action: "RETURNED",
-      performedBy: req.user._id,
-      unit: machine.unitId || null,
-      timestamp: new Date(),
+      performedBy: req.user?._id || null, // vem som lämnar tillbaka
+      unit: machine.unitId?._id || null,
     });
 
     return res.status(200).json({ message: "Maskin återlämnad", machine });
