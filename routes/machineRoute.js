@@ -8,6 +8,7 @@ import {
   borrowMachine,
   searchMachines,
   returnMachine,
+  getAllMachineLogs,
 } from "../controllers/machineController.js";
 import { getToken } from "../middleware/authMiddleware.js";
 
@@ -15,6 +16,8 @@ const machineRouter = express.Router();
 
 // CRUD
 machineRouter.post("/machines", createMachine); // body: { name, unitId }
+machineRouter.get("/machines/logs", getAllMachineLogs);
+
 machineRouter.get("/machines", getMachinesWithQRCode);
 machineRouter.get("/machines/search", searchMachines);
 machineRouter.get("/machines/:machineId", getMachineById);

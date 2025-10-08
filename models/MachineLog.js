@@ -20,12 +20,11 @@ const machineLogSchema = new mongoose.Schema(
       default: null, // t.ex. systemhändelser som skapande kan vara null
     },
 
-    workplace: {
+    borrowedFrom: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "WorkPlace",
-      default: null, // om maskinen lånades från en viss arbetsplats
+      default: null,
     },
-
     unit: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Unit",

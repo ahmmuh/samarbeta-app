@@ -6,29 +6,59 @@ import User from "../models/user.js";
 // Lägg till task (utan enhet)
 // ---------------------------
 
-export const addTask = async (req, res) => {
-  const { title, description, location, coordinates } = req.body;
+// export const addTask = async (req, res) => {
+//   const { title, description, location, coordinates } = req.body;
 
-  // Kontrollera att nödvändiga fält finns
-  if (!title || !description || !location) {
+//   // Kontrollera att nödvändiga fält finns
+//   if (!title || !description || !location) {
+//     return res.status(400).json({
+//       message:
+//         "Det saknas en eller fler av följande: title, description, location",
+//     });
+//   }
+
+//   try {
+//     // Skapa task utan koppling till user eller unit
+//     const newTask = new Task({
+//       title,
+//       description,
+//       location,
+//       coordinates, // [lon, lat]
+//       // unit och createdBy lämnas tomma
+//     });
+
+//     console.log("NYTT UPPDRAG", newTask);
+//     await newTask.save();
+//     return res.status(200).json(newTask);
+//   } catch (error) {
+//     console.error("Fel vid skapande av task:", error.message);
+//     return res.status(500).json({
+//       message: "Serverfel vid skapande av ny task",
+//       error: error.message,
+//     });
+//   }
+// };
+export const addTask = async (req, res) => {
+  const { title, description, address, location } = req.body;
+
+  console.log("NY TASK", req.body);
+  if (!title || !description) {
     return res.status(400).json({
-      message:
-        "Det saknas en eller fler av följande: title, description, location",
+      message: "Title, description och coordinates ([lon, lat]) krävs",
     });
   }
 
   try {
-    // Skapa task utan koppling till user eller unit
     const newTask = new Task({
       title,
       description,
+      address: address || "",
       location,
-      coordinates, // [lon, lat]
-      // unit och createdBy lämnas tomma
     });
 
     console.log("NYTT UPPDRAG", newTask);
     await newTask.save();
+
     return res.status(200).json(newTask);
   } catch (error) {
     console.error("Fel vid skapande av task:", error.message);
@@ -38,7 +68,6 @@ export const addTask = async (req, res) => {
     });
   }
 };
-
 // ---------------------------
 // Tilldela task till enhet
 // ---------------------------

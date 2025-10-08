@@ -36,6 +36,13 @@ export const createMachine = async (req, res) => {
       "name"
     );
 
+    await MachineLog.create({
+      machine: machine._id,
+      action: "CREATED",
+      performedBy: req.user?._id || null, // vem som lånar
+      unit: machine.unitId?._id || null,
+      workplace: machine.borrowedFrom || null, //
+    });
     return res
       .status(201)
       .json({ message: "Maskin skapad", machine: populatedMachine });
@@ -55,7 +62,8 @@ export const getMachinesWithQRCode = async (req, res) => {
   try {
     const machines = await Machine.find()
       .populate("unitId", "name")
-      .populate("borrowedBy", "name");
+      .populate("borrowedBy", "name")
+      .populate("borrowedFrom", "name");
 
     if (!machines.length)
       return res.status(404).json({ message: "Inga maskiner hittades" });
@@ -77,8 +85,8 @@ export const getMachineById = async (req, res) => {
   try {
     const machine = await Machine.findById(machineId)
       .populate("unitId", "name")
-      .populate("borrowedBy", "name");
-
+      .populate("borrowedBy", "name")
+      .populate("borrowedFrom", "name");
     if (!machine)
       return res.status(404).json({ message: "Maskin hittades inte" });
 
@@ -164,6 +172,7 @@ export const borrowMachine = async (req, res) => {
       action: "BORROWED",
       performedBy: req.user?._id || null, // vem som lånar
       unit: machine.unitId?._id || null,
+      workplace: machine.borrowedFrom || null, //
     });
 
     return res.status(200).json({ message: "Maskin utlånad", machine });
@@ -232,6 +241,7 @@ export const returnMachine = async (req, res) => {
       action: "RETURNED",
       performedBy: req.user?._id || null, // vem som lämnar tillbaka
       unit: machine.unitId?._id || null,
+      workplace: machine.borrowedFrom || null, //
     });
 
     return res.status(200).json({ message: "Maskin återlämnad", machine });
@@ -256,11 +266,29 @@ export const searchMachines = async (req, res) => {
       ],
     })
       .populate("unitId", "name")
+      .populate("borrowedFrom", "name")
       .populate("borrowedBy", "name");
 
     return res.status(200).json({ message: "Maskiner hittades", machines });
   } catch (error) {
     console.error("searchMachines error:", error);
     return res.status(500).json({ message: "Serverfel vid sökning" });
+  }
+};
+
+// Hämta alla logs med användare
+export const getAllMachineLogs = async (req, res) => {
+  try {
+    const logs = await MachineLog.find()
+      .populate("performedBy", "name email") // populera med valda fält, t.ex. name och email
+      .populate("machine", "name serialNumber") // om du vill populera maskininfo
+      .populate("borrowedFrom", "name") // om du vill populera arbetsplats
+      .populate("unit", "name") // om du vill populera enhet
+      .sort({ timestamp: -1 }); // senaste först
+
+    res.status(200).json(logs);
+  } catch (error) {
+    console.error("Error fetching machine logs:", error);
+    res.status(500).json({ message: "Serverfel vid hämtning av maskinloggar" });
   }
 };

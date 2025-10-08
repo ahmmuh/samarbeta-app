@@ -29,6 +29,7 @@ const machineSchema = new mongoose.Schema(
       ref: "User",
       default: null,
     },
+
     borrowedDate: { type: Date, default: null },
     returnedDate: { type: Date, default: null },
     qrCode: { type: String },
