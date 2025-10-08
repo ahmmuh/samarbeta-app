@@ -77,6 +77,12 @@ const taskSchema = new mongoose.Schema(
     },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     unit: { type: mongoose.Schema.Types.ObjectId, ref: "Unit" },
+
+    status: {
+      type: String,
+      enum: ["Ej påbörjat", "Påbörjat", "Färdigt"],
+      default: "Ej påbörjat",
+    },
   },
   { timestamps: true }
 );
