@@ -11,23 +11,29 @@ import {
   removeUserFromWorkPlace,
   updateWorkPlace,
 } from "../controllers/WorkplaceController.js";
+import { getToken } from "../middleware/authMiddleware.js";
 
 const workplaceRoute = express.Router();
 
-workplaceRoute.post("/workplaces", createWorkPlace);
-workplaceRoute.get("/workplaces/nearby", getNearbyWorkPlaces);
-workplaceRoute.get("/workplaces", getAllWorkPlaces);
-workplaceRoute.get("/workplaces/:workplaceId", getWorkPlaceById);
+workplaceRoute.post("/workplaces", getToken, createWorkPlace);
+workplaceRoute.get("/workplaces/nearby", getToken, getNearbyWorkPlaces);
+workplaceRoute.get("/workplaces", getToken, getAllWorkPlaces);
+workplaceRoute.get("/workplaces/:workplaceId", getToken, getWorkPlaceById);
 
 // workplaceRoute.put(
 //   "/units/:unitId/workplaces/:workplaceId",
 //   addWorkPlaceToUnit
 // );
-workplaceRoute.put("/workplaces/:workplaceId", updateWorkPlace);
-workplaceRoute.delete("/workplaces/:workplaceId", deleteWorkplace);
-workplaceRoute.patch("/workplaces/:workplaceId", assignUserToWorkPlace);
+workplaceRoute.put("/workplaces/:workplaceId", getToken, updateWorkPlace);
+workplaceRoute.delete("/workplaces/:workplaceId", getToken, deleteWorkplace);
+workplaceRoute.patch(
+  "/workplaces/:workplaceId",
+  getToken,
+  assignUserToWorkPlace
+);
 workplaceRoute.delete(
   "/workplaces/:workplaceId/users/:userId",
+  getToken,
   removeUserFromWorkPlace
 );
 

@@ -1,3 +1,4 @@
+import { getGreetingMessage } from "../helperFunction/greetings.js";
 import Clock from "../models/Clock.js";
 import User from "../models/User.js";
 import WorkPlace from "../models/WorkPlace.js";
@@ -6,6 +7,15 @@ import WorkPlace from "../models/WorkPlace.js";
 
 export const clockIn = async (req, res) => {
   try {
+    const now = new Date();
+    const hour = now.getHours();
+
+    if (hour >= 15) {
+      return res.status(400).json({
+        message:
+          "Du kan inte stämpla in efter kl. 15:00. Endast utstämpling är tillåten.",
+      });
+    }
     const { lastFour, location } = req.body;
 
     if (!location?.coordinates || location.coordinates.length !== 2) {
@@ -63,11 +73,12 @@ export const clockIn = async (req, res) => {
       "user",
       "name"
     );
+    const greetingMessage = getGreetingMessage(true, user.name, new Date());
 
     res.status(201).json({
       clock: populatedClock,
       name: populatedClock.user.name,
-      message: `Hej ${populatedClock.user.name}, välkommen!`,
+      message: greetingMessage,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -133,11 +144,14 @@ export const clockOut = async (req, res) => {
       "user",
       "name"
     );
+
+    const greetingMessage = getGreetingMessage(false, user.name, new Date());
+
     res.status(200).json({
       populatedClock,
       clock,
       name: user.name,
-      message: `Tack för idag ${user.name}!`,
+      message: greetingMessage,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -161,6 +175,75 @@ export const getUserClocks = async (req, res) => {
 
     res.json(clocks);
   } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getAllUserClocks = async (req, res) => {
+  try {
+    // Aggregation: summera per dag och per användare
+    const dailySummaryAll = await Clock.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+      {
+        $addFields: {
+          dateOnly: {
+            $dateToString: { format: "%Y-%m-%d", date: "$clockInDate" },
+          },
+        },
+      },
+      {
+        $group: {
+          _id: { date: "$dateOnly", userId: "$user._id" },
+          totalMinutes: { $sum: "$totalMinutes" },
+          clocks: {
+            $push: {
+              clockInDate: "$clockInDate",
+              clockOutDate: "$clockOutDate",
+              totalMinutes: "$totalMinutes",
+              workplace: "$workplace",
+            },
+          },
+          userName: { $first: "$user.name" },
+        },
+      },
+      { $sort: { "_id.date": 1, userName: 1 } },
+    ]);
+
+    // Populera arbetsplatsnamn för varje pass
+    for (const day of dailySummaryAll) {
+      for (const clock of day.clocks) {
+        if (clock.workplace) {
+          const wp = await WorkPlace.findById(clock.workplace).select(
+            "name address"
+          );
+          clock.workplace = wp ? `${wp.name}, ${wp.address}` : "";
+        }
+      }
+    }
+
+    // Formatera totalMinutes till timmar + minuter
+    const formattedSummary = dailySummaryAll.map((day) => {
+      const hours = Math.floor(day.totalMinutes / 60);
+      const minutes = day.totalMinutes % 60;
+      return {
+        user: day.userName,
+        date: day._id.date,
+        totalTime: `${hours}h ${minutes}m`,
+        clocks: day.clocks,
+      };
+    });
+
+    res.json({ dailySummary: formattedSummary });
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ message: error.message });
   }
 };

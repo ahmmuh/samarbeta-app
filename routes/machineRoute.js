@@ -18,11 +18,11 @@ const machineRouter = express.Router();
 machineRouter.post("/machines", createMachine); // body: { name, unitId }
 machineRouter.get("/machines/logs", getAllMachineLogs);
 
-machineRouter.get("/machines", getMachinesWithQRCode);
-machineRouter.get("/machines/search", searchMachines);
-machineRouter.get("/machines/:machineId", getMachineById);
-machineRouter.put("/machines/:machineId", updateMachine); // body: { name }
-machineRouter.delete("/machines/:machineId", deleteMachine);
+machineRouter.get("/machines", getToken, getMachinesWithQRCode);
+machineRouter.get("/machines/search", getToken, searchMachines);
+machineRouter.get("/machines/:machineId", getToken, getMachineById);
+machineRouter.put("/machines/:machineId", getToken, updateMachine); // body: { name }
+machineRouter.delete("/machines/:machineId", getToken, deleteMachine);
 
 // Utlåning / återlämning
 machineRouter.post("/machines/:machineId/borrow", getToken, borrowMachine); // body: { userId }
