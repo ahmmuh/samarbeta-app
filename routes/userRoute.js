@@ -4,13 +4,15 @@ import {
   deleteUser,
   getAllUsers,
   getUserById,
-  saveExpoPushToken,
   searchUser,
   updateUser,
 } from "../controllers/UserController.js";
 import { getToken } from "../middleware/authMiddleware.js";
 import { getCurrentUser } from "../controllers/authController.js";
-import { sendPushNotis } from "../controllers/ExpoPushTokenController.js";
+import {
+  saveExpoPushToken,
+  sendPushNotis,
+} from "../controllers/ExpoPushTokenController.js";
 
 const userRouter = express.Router();
 

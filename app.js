@@ -15,7 +15,6 @@ import qrCodeRoute from "./routes/qrCodeROute.js";
 import authRoute from "./routes/authRoute.js";
 import { getToken } from "./middleware/authMiddleware.js";
 import addressRoute from "./routes/addressRoute.js";
-import placesRoute from "./routes/placeRoute.js";
 import clokcRoute from "./routes/clockRoute.js";
 import workplaceRoute from "./routes/workplaceRoute.js";
 import machineRouter from "./routes/machineRoute.js";
@@ -24,7 +23,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: true,
     credentials: true,
   })
 );
@@ -42,16 +41,15 @@ app.use("/api", machineRouter);
 app.use("/api", unitRouter);
 app.use("/api", workplaceRoute);
 app.use("/api", taskRoute);
-app.use("/api", placesRoute);
 app.use("/api", qrCodeRoute);
 app.use("/api", keyRoute);
 app.use("/api", keyLogRoute);
 app.use("/api", userRouter);
 app.get("*", (req, res) => {
-  res.status(200).json({ Message: "HELLO WORLD!" });
+  res.status(200).json({ Message: "HEJ FOLK" });
 });
 app.use("/api/cronjobs", cronJobRoute);
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`The Server listening on port ${PORT}`);
   getConnection();
 });

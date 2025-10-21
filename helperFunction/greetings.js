@@ -20,7 +20,7 @@ export const getGreetingMessage = (
     } else if ((hour === 14 && minutes >= 20) || hour >= 15) {
       return `Bra jobbat idag ${userName}! Gå hem och vila, vi ses.`;
     } else {
-      return `Vänligen stämpla in.`;
+      return `Vänligen stämpla in /ut`;
     }
   }
 

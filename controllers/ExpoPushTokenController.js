@@ -21,16 +21,51 @@ export const getPushToken = async (req, res) => {
   }
 };
 
+//Spara Expo push-token i användarens dokument
+export const saveExpoPushToken = async (req, res) => {
+  const userId = req.user._id;
+  const { expoPushToken } = req.body;
+
+  console.log("EXPO PUSH TOKEN", expoPushToken);
+  console.log("ID för: Inloggade användare som ska få expo push token", userId);
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: `Användare med ID ${userId} hittades inte` });
+    }
+
+    const updatedUserWithExpoToken = await User.findByIdAndUpdate(userId, {
+      expoPushToken,
+    });
+    return res.status(200).json({
+      success: true,
+      message: `Användare med ID ${userId} och expo push token ${expoPushToken} har uppdaterats `,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Serverfel vid uppdatering av expoPushToken" });
+  }
+};
+
 //Skicka en push-notis till en specifik användare via Expo’s push-service
 
 export const sendPushNotis = async (req, res) => {
   const { userId } = req.body;
   try {
     const user = await User.findById(userId);
+
     if (!user) {
       return res.status(404).json({ message: "Användare hittades inte" });
     }
 
+    console.log(
+      "Användare med push-notis token från ExpoPushTokenContoller:",
+      user
+    );
     const expoPushToken = user.expoPushToken;
 
     if (!expoPushToken || !Expo.isExpoPushToken(expoPushToken)) {

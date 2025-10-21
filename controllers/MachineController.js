@@ -47,7 +47,7 @@ export const createMachine = async (req, res) => {
       .status(201)
       .json({ message: "Maskin skapad", machine: populatedMachine });
   } catch (error) {
-    console.error("❌ createMachine error:", error);
+    console.error(" createMachine error:", error);
     return res.status(500).json({
       message: "Serverfel vid skapande av maskin",
       error: error.message,
@@ -70,7 +70,7 @@ export const getMachinesWithQRCode = async (req, res) => {
 
     return res.status(200).json(machines);
   } catch (error) {
-    console.error("❌ getMachines error:", error);
+    console.error(" getMachines error:", error);
     return res
       .status(500)
       .json({ message: "Serverfel vid hämtning av maskiner" });
@@ -120,7 +120,7 @@ export const updateMachine = async (req, res) => {
 
     return res.status(200).json({ message: "Maskin uppdaterad", machine });
   } catch (error) {
-    console.error("❌ updateMachine error:", error);
+    console.error(" updateMachine error:", error);
     return res.status(500).json({ message: "Serverfel vid uppdatering" });
   }
 };
@@ -244,9 +244,9 @@ export const returnMachine = async (req, res) => {
       workplace: machine.borrowedFrom || null, //
     });
 
-    return res.status(200).json({ message: "Maskin återlämnad", machine });
+    return res.status(200).json(machine);
   } catch (error) {
-    console.error("❌ returnMachine error:", error);
+    console.error("returnMachine error:", error);
     return res.status(500).json({ message: "Serverfel vid återlämning" });
   }
 };
@@ -269,7 +269,7 @@ export const searchMachines = async (req, res) => {
       .populate("borrowedFrom", "name")
       .populate("borrowedBy", "name");
 
-    return res.status(200).json({ message: "Maskiner hittades", machines });
+    return res.status(200).json(machines);
   } catch (error) {
     console.error("searchMachines error:", error);
     return res.status(500).json({ message: "Serverfel vid sökning" });
