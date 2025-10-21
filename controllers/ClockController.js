@@ -1,5 +1,5 @@
 import { getGreetingMessage } from "../helperFunction/greetings.js";
-import Clock from "../models/Clock.js";
+import Clock from "../models/clock.js";
 import User from "../models/User.js";
 import WorkPlace from "../models/WorkPlace.js";
 

@@ -1,4 +1,4 @@
-import Clock from "../models/Clock.js";
+import Clock from "../models/clock.js";
 import KeyModel from "../models/key.js";
 import Unit from "../models/unit.js";
 import User from "../models/user.js";
