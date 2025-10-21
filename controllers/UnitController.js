@@ -39,7 +39,6 @@ export const createUnit = async (req, res) => {
 export const getAllUnits = async (req, res) => {
   try {
     const units = await Unit.find()
-      .populate("apartments")
       .populate("keys")
       .populate({
         path: "users",
@@ -228,19 +227,17 @@ export const searchUnit = async (req, res) => {
   }
 
   try {
-    const apartments = await Unit.find({
+    const units = await Unit.find({
       name: { $regex: name, $options: "i" },
     });
 
-    if (apartments.length === 0) {
+    if (units.length === 0) {
       return res
         .status(404)
         .json({ message: "Ingen enhet matchar sökningen." });
     }
 
-    return res
-      .status(200)
-      .json({ message: "Enhet hittades", data: apartments });
+    return res.status(200).json({ message: "Enhet hittades", data: units });
   } catch (error) {
     console.error("Fel vid sökning:", error.message);
     return res.status(500).json({ message: "Serverfel vid sökning." });

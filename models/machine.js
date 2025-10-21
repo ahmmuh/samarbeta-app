@@ -14,7 +14,7 @@ const machineSchema = new mongoose.Schema(
     unitId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Unit",
-      required: true, // Vilken enhet som äger maskinen
+      required: true, 
     },
 
     isAvailable: { type: Boolean, default: true }, // true = ledig, false = utlånad
