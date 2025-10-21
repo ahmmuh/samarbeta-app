@@ -9,7 +9,7 @@ import {
   searchMachines,
   returnMachine,
   getAllMachineLogs,
-} from "../controllers/machineController.js";
+} from "../controllers/MachineController.js";
 import { getToken } from "../middleware/authMiddleware.js";
 
 const machineRouter = express.Router();
