@@ -245,4 +245,3 @@ export const searchUser = async (req, res) => {
 };
 
 //Spara expo-push-token & userId
-

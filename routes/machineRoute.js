@@ -9,7 +9,7 @@ import {
   searchMachines,
   returnMachine,
   getAllMachineLogs,
-} from "../controllers/machineController.js";
+} from "../controllers/MachineController.js";
 import { getToken } from "../middleware/authMiddleware.js";
 
 const machineRouter = express.Router();
@@ -25,6 +25,7 @@ machineRouter.delete("/machines/:machineId", getToken, deleteMachine);
 // Utlåning / återlämning
 machineRouter.post("/machines/:machineId/borrow", getToken, borrowMachine);
 machineRouter.post("/machines/:machineId/return", getToken, returnMachine);
+//Get all machine logs + get machines
 machineRouter.get("/machines/logs", getToken, getAllMachineLogs);
 machineRouter.get("/machines", getToken, getMachinesWithQRCode);
 
