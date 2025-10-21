@@ -1,7 +1,7 @@
 import { geocodeAddress } from "../lib/geocode/geocoder.js";
 import Unit from "../models/unit.js";
 import User from "../models/user.js";
-import WorkPlace from "../models/WorkPlace.js";
+import WorkPlace from "../models/workPlace.js";
 
 // Skapa ny arbetsplats
 export const createWorkPlace = async (req, res) => {
