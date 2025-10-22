@@ -3,30 +3,37 @@ import Clock from "../models/clock.js";
 import User from "../models/user.js";
 import WorkPlace from "../models/workPlace.js";
 
-//Clock in
-
+// Clock in
 export const clockIn = async (req, res) => {
   try {
-    const now = new Date();
-    const hour = now.getHours();
+    // const now = new Date();
+    // const hour = now.getHours();
 
-    if (hour >= 15) {
-      return res.status(400).json({
-        message:
-          "Du kan inte stämpla in efter kl. 15:00. Endast utstämpling är tillåten.",
-      });
-    }
+    // if (hour >= 15) {
+    //   return res.status(400).json({
+    //     isError: true,
+    //     message: "Kan ej stämpla in efter 15:00",
+    //   });
+    // }
+
     const { lastFour, location } = req.body;
 
     if (!location?.coordinates || location.coordinates.length !== 2) {
-      return res.status(400).json({ message: "Ogiltig platsdata" });
+      return res.status(400).json({
+        isError: true,
+        message: "Ogiltig platsdata",
+      });
     }
 
     const user = await User.findOne({ lastFour }).populate(
       "assignedWorkplaces"
     );
-    if (!user)
-      return res.status(404).json({ message: "Denna användare hittades inte" });
+    if (!user) {
+      return res.status(404).json({
+        isError: true,
+        message: "Denna användare hittades inte",
+      });
+    }
 
     // Kolla om user redan är inne
     const activeClock = await Clock.findOne({
@@ -34,7 +41,10 @@ export const clockIn = async (req, res) => {
       clockOutDate: null,
     });
     if (activeClock) {
-      return res.status(400).json({ message: "Du är redan stämplad in." });
+      return res.status(400).json({
+        isError: true,
+        message: "Du är redan stämplad in.",
+      });
     }
 
     // Hitta en arbetsplats inom 100 m som användaren är kopplad till
@@ -51,7 +61,8 @@ export const clockIn = async (req, res) => {
 
     if (!matchedWP) {
       return res.status(400).json({
-        message: "Du befinner dig inte på någon av dina arbetsplatser.",
+        isError: true,
+        message: "Du är inte på rätt plats för att stämpla in.",
       });
     }
 
@@ -76,30 +87,40 @@ export const clockIn = async (req, res) => {
     const greetingMessage = getGreetingMessage(true, user.name, new Date());
 
     res.status(201).json({
+      isError: false,
       clock: populatedClock,
       name: populatedClock.user.name,
       message: greetingMessage,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      isError: true,
+      message: error.message,
+    });
   }
 };
 
 // Clock out
-
 export const clockOut = async (req, res) => {
   try {
     const { lastFour, location } = req.body;
 
     if (!location?.coordinates || location.coordinates.length !== 2) {
-      return res.status(400).json({ message: "Ogiltig platsdata" });
+      return res.status(400).json({
+        isError: true,
+        message: "Ogiltig platsdata",
+      });
     }
 
     const user = await User.findOne({ lastFour }).populate(
       "assignedWorkplaces"
     );
-    if (!user)
-      return res.status(404).json({ message: "Denna användare hittades inte" });
+    if (!user) {
+      return res.status(404).json({
+        isError: true,
+        message: "Denna användare hittades inte",
+      });
+    }
 
     const clock = await Clock.findOne({
       user: user._id,
@@ -108,7 +129,8 @@ export const clockOut = async (req, res) => {
 
     if (!clock) {
       return res.status(400).json({
-        message: "Du måste stämpla in först innan du kan stämpla ut.",
+        isError: true,
+        message: "Du måste stämpla in först",
       });
     }
 
@@ -125,7 +147,8 @@ export const clockOut = async (req, res) => {
 
     if (!matchedWP) {
       return res.status(400).json({
-        message: "Du befinner dig inte på någon av dina arbetsplatser.",
+        isError: true,
+        message: "Du är inte på rätt plats för att stämpla ut.",
       });
     }
 
@@ -140,6 +163,7 @@ export const clockOut = async (req, res) => {
     clock.address = matchedWP.address;
     clock.workplace = matchedWP._id;
     await clock.save();
+
     const populatedClock = await Clock.findById(clock._id).populate(
       "user",
       "name"
@@ -148,40 +172,49 @@ export const clockOut = async (req, res) => {
     const greetingMessage = getGreetingMessage(false, user.name, new Date());
 
     res.status(200).json({
+      isError: false,
       populatedClock,
       clock,
       name: user.name,
       message: greetingMessage,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      isError: true,
+      message: error.message,
+    });
   }
 };
 
-//Hämta användarens pass
-
+// Hämta användarens pass
 export const getUserClocks = async (req, res) => {
   try {
     const { lastFour } = req.params;
 
     const user = await User.findOne({ lastFour });
     if (!user) {
-      return res.status(404).json({ message: "Användare hittades inte" });
+      return res.status(404).json({
+        isError: true,
+        message: "Användare hittades inte",
+      });
     }
 
     const clocks = await Clock.find({ user: user._id })
       .sort({ clockInDate: -1 })
       .populate("workplace", "name address");
 
-    res.json(clocks);
+    res.json({ isError: false, clocks });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      isError: true,
+      message: error.message,
+    });
   }
 };
 
+// Hämta alla användares pass summerat per dag
 export const getAllUserClocks = async (req, res) => {
   try {
-    // Aggregation: summera per dag och per användare
     const dailySummaryAll = await Clock.aggregate([
       {
         $lookup: {
@@ -241,9 +274,12 @@ export const getAllUserClocks = async (req, res) => {
       };
     });
 
-    res.json({ dailySummary: formattedSummary });
+    res.json({ isError: false, dailySummary: formattedSummary });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      isError: true,
+      message: error.message,
+    });
   }
 };

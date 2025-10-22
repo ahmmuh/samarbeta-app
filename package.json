@@ -28,6 +28,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.7.2",
     "nanoid": "^5.1.6",
+    "node-cache": "^5.1.2",
     "node-cron": "^3.0.3",
     "node-geocoder": "^4.4.1",
     "qrcode": "^1.5.4"

@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const machineLogSchema = new mongoose.Schema(
   {
-    machine: {
+    machine: {  
       type: mongoose.Schema.Types.ObjectId,
       ref: "Machine",
       required: true,

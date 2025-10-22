@@ -18,6 +18,7 @@ import addressRoute from "./routes/addressRoute.js";
 import clokcRoute from "./routes/clockRoute.js";
 import workplaceRoute from "./routes/workplaceRoute.js";
 import machineRouter from "./routes/machineRoute.js";
+import { clearCache } from "./cache/clearCache.js";
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
@@ -28,6 +29,19 @@ app.use(
   })
 );
 const PORT = process.env.PORT || 8000;
+
+// Rensa cachen en gång per minut
+let lastCleared = 0;
+const CLEAR_INTERVAL = 60 * 1000; // 1 minut
+
+app.use((req, res, next) => {
+  const now = Date.now();
+  if (now - lastCleared > CLEAR_INTERVAL) {
+    clearCache();
+    lastCleared = now;
+  }
+  next();
+});
 
 app.use("/api", addressRoute);
 

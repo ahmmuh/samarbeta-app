@@ -195,7 +195,7 @@ export const getNearbyWorkPlaces = async (req, res) => {
   try {
     const userId = req.user.id; // från auth middleware
     const { lat, lng } = req.body; // GPS från klienten
-    const maxDistance = 200; // standard (meter)
+    const maxDistance = 300; // standard (meter)
 
     if (!lat || !lng) {
       return res.status(400).json({ message: "GPS-position krävs" });

@@ -5,12 +5,13 @@ import {
   getAllUserClocks,
   getUserClocks,
 } from "../controllers/ClockController.js";
+import { getToken } from "../middleware/authMiddleware.js";
 
 const clokcRoute = express.Router();
 
-clokcRoute.post("/clocks/in", clockIn);
-clokcRoute.post("/clocks/out", clockOut);
-clokcRoute.get("/clocks/user/:lastFour", getUserClocks);
-clokcRoute.get("/clocks/users", getAllUserClocks);
+clokcRoute.post("/clocks/in", getToken, clockIn);
+clokcRoute.post("/clocks/out", getToken, clockOut);
+clokcRoute.get("/clocks/user/:lastFour", getToken, getUserClocks);
+clokcRoute.get("/clocks/users", getToken, getAllUserClocks);
 
 export default clokcRoute;
