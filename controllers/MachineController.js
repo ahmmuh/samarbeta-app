@@ -2,6 +2,7 @@ import { generateQRCodeWithLabel } from "../helperFunction/generateQRCodeWithLab
 import Machine from "../models/machine.js";
 import Unit from "../models/unit.js";
 import MachineLog from "../models/machineLog.js";
+import { sendPushNotis } from "./ExpoPushTokenController.js";
 
 /* =====================================================
    🟢 SKAPA MASKIN
@@ -172,6 +173,15 @@ export const borrowMachine = async (req, res) => {
       unit: machine.unitId || null,
       workplace: machine.borrowedFrom || null,
     });
+
+    //Skicka push-notis till användaren som lånar maskinen
+    if (userId) {
+      await sendPushNotis({
+        userId,
+        title: "Ny maskin utlånad",
+        body: `Du har lånat maskinen "${machine.name}". Glöm inte att lämna tillbaka den!`,
+      });
+    }
 
     return res.status(200).json({
       message: userId
