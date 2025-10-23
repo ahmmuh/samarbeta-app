@@ -26,6 +26,6 @@ userRouter.put("/users/:userId", getToken, updateUser);
 userRouter.get("/users/keys/:keyId/:userId", getToken, displayBorrowedByUser);
 
 userRouter.patch("/users/save-token", getToken, saveExpoPushToken);
-userRouter.post("/users/sendNotis", getToken, sendPushNotis);
+// userRouter.post("/users/sendNotis", getToken, sendPushNotis);
 
 export default userRouter;

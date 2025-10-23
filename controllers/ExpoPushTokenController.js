@@ -53,42 +53,65 @@ export const saveExpoPushToken = async (req, res) => {
 
 //Skicka en push-notis till en specifik användare via Expo’s push-service
 
-export const sendPushNotis = async (req, res) => {
-  const { userId } = req.body;
-  try {
-    const user = await User.findById(userId);
+// export const sendPushNotis = async (req, res) => {
+//   const { userId } = req.body;
+//   try {
+//     const user = await User.findById(userId);
 
-    if (!user) {
-      return res.status(404).json({ message: "Användare hittades inte" });
-    }
+//     if (!user) {
+//       return res.status(404).json({ message: "Användare hittades inte" });
+//     }
 
-    console.log(
-      "Användare med push-notis token från ExpoPushTokenContoller:",
-      user
-    );
-    const expoPushToken = user.expoPushToken;
+//     console.log(
+//       "Användare med push-notis token från ExpoPushTokenContoller:",
+//       user
+//     );
+//     const expoPushToken = user.expoPushToken;
 
-    if (!expoPushToken || !Expo.isExpoPushToken(expoPushToken)) {
-      return res
-        .status(400)
-        .json({ message: "Ogiltig eller saknad Expo push-token" });
-    }
-    const expoClient = new Expo();
-    const message = {
-      to: expoPushToken,
-      title: title || "Ny notis",
-      body: body || "Du har ett nytt meddelande",
-      sound: "default",
-      data: data || {},
-    };
-    const tickets = await expoClient.sendPushNotificationsAsync([message]);
+//     if (!expoPushToken || !Expo.isExpoPushToken(expoPushToken)) {
+//       return res
+//         .status(400)
+//         .json({ message: "Ogiltig eller saknad Expo push-token" });
+//     }
+//     const expoClient = new Expo();
+//     const message = {
+//       to: expoPushToken,
+//       title: title || "Ny notis",
+//       body: body || "Du har ett nytt meddelande",
+//       sound: "default",
+//       data: data || {},
+//     };
+//     const tickets = await expoClient.sendPushNotificationsAsync([message]);
 
-    return res
-      .status(200)
-      .json({ success: true, message: "Push-notis skickad", tickets });
-  } catch (error) {
-    return res
-      .status(500)
-      .json({ message: "Serverfel när push-notis skulle skickas" });
+//     return res
+//       .status(200)
+//       .json({ success: true, message: "Push-notis skickad", tickets });
+//   } catch (error) {
+//     return res
+//       .status(500)
+//       .json({ message: "Serverfel när push-notis skulle skickas" });
+//   }
+// };
+
+// Intern funktion för att skicka push-notis till en specifik användare
+export const sendPushNotis = async ({ userId, title, body, data = {} }) => {
+  const user = await User.findById(userId);
+  if (!user) throw new Error("Användare hittades inte");
+
+  const expoPushToken = user.expoPushToken;
+  if (!expoPushToken || !Expo.isExpoPushToken(expoPushToken)) {
+    throw new Error("Ogiltig eller saknad Expo push-token");
   }
+
+  const expoClient = new Expo();
+  const message = {
+    to: expoPushToken,
+    title,
+    body,
+    sound: "default",
+    data,
+  };
+
+  const tickets = await expoClient.sendPushNotificationsAsync([message]);
+  return tickets; // Returnerar tickets så du kan logga eller felsöka
 };

@@ -176,11 +176,12 @@ export const borrowMachine = async (req, res) => {
 
     //Skicka push-notis till användaren som lånar maskinen
     if (userId) {
-      await sendPushNotis({
+      const tickets = await sendPushNotis({
         userId,
         title: "Ny maskin utlånad",
         body: `Du har lånat maskinen "${machine.name}". Glöm inte att lämna tillbaka den!`,
       });
+      console.log("Push tickets:", tickets);
     }
 
     return res.status(200).json({
