@@ -37,9 +37,11 @@ export const createUnit = async (req, res) => {
 };
 
 export const getAllUnits = async (req, res) => {
+  console.log("Hämta alla enheter");
   try {
     const units = await Unit.find()
       .populate("keys")
+      .populate("apartments")
       .populate({
         path: "users",
         match: { isDeleted: { $ne: true } },
@@ -67,40 +69,6 @@ export const getAllUnits = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
-// export const getAllUnits = async (req, res) => {
-//   // await User.updateMany(
-//   //   { isDeleted: { $exists: false } },
-//   //   { $set: { isDeleted: false } }
-//   // );
-
-//   try {
-//     const units = await Unit.find()
-//       .populate("apartments")
-//       .populate("keys")
-//       .populate({
-//         path: "users",
-//         select: "-password",
-//         // populate: { path: "keys" },
-//       });
-
-//     const unitsWithTasks = await Promise.all(
-//       units.map(async (unit) => {
-//         const tasks = await Task.find({ unit: unit._id });
-//         return {
-//           ...unit.toObject(),
-//           tasks,
-//           tasksCount: tasks.length,
-//         };
-//       })
-//     );
-
-//     return res.status(200).json(unitsWithTasks);
-//   } catch (error) {
-//     console.error("Fel vid hämtning av enheter:", error);
-//     res.status(500).json({ message: "Internal Server Error" });
-//   }
-// };
 
 //Lägg befintlig användare till befintlig ENHET
 
@@ -142,9 +110,41 @@ export const addUserToUnit = async (req, res) => {
   }
 };
 
+// export const getUnitByID = async (req, res) => {
+//   try {
+//     const { unitId } = req.params;
+//     const unit = await Unit.findById(unitId)
+//       .populate("apartments")
+//       .populate({
+//         path: "keys",
+//         populate: [
+//           { path: "borrowedBy", select: "-password" },
+//           { path: "lastBorrowedBy", select: "-password" },
+//         ],
+//       })
+//       .populate({
+//         path: "users",
+//         match: { isDeleted: { $ne: true } },
+//         select: "-password",
+//       });
+
+//     if (!unit) {
+//       return res.status(404).json({ message: "Enheten hittades inte" });
+//     }
+//     const tasks = await Task.find({ unit: unitId });
+
+//     return res.status(200).json({ ...unit.toObject(), tasks });
+//   } catch (error) {
+//     console.error("Fel vid hämtning av enhet:", error);
+//     res.status(500).json({ message: "Serverfel" });
+//   }
+// };
+
 export const getUnitByID = async (req, res) => {
+  console.log("getUniyByID körs");
   try {
     const { unitId } = req.params;
+
     const unit = await Unit.findById(unitId)
       .populate("apartments")
       .populate({
@@ -160,12 +160,22 @@ export const getUnitByID = async (req, res) => {
         select: "-password",
       });
 
+    console.log("Hämtad enhet via getUnitByID med underliggande listor:", unit);
     if (!unit) {
       return res.status(404).json({ message: "Enheten hittades inte" });
     }
+
+    // Hämta tasks som vanligt
     const tasks = await Task.find({ unit: unitId });
 
-    return res.status(200).json({ ...unit.toObject(), tasks });
+    // Hämta apartments som refererar till denna unit
+    // const apartments = await Apartment.find({ unit: unitId });
+    // console.log("Apartments för enhet:", apartments);
+
+    return res.status(200).json({
+      ...unit.toObject(),
+      tasks,
+    });
   } catch (error) {
     console.error("Fel vid hämtning av enhet:", error);
     res.status(500).json({ message: "Serverfel" });

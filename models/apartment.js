@@ -4,7 +4,8 @@ const apartmentSchema = new mongoose.Schema(
   {
     apartmentLocation: String,
     description: String,
-    keyLocation: String, // Där man hämtar nyckel till lägenheten
+    keyLocation: String,
+
     status: {
       type: String,
       enum: ["Ej påbörjat", "Påbörjat", "Färdigt"],
@@ -18,6 +19,8 @@ const apartmentSchema = new mongoose.Schema(
     },
     startDate: { type: Date, default: null }, // Planerad start
     endDate: { type: Date, default: null }, // Planerat slut
+
+    unit: { type: mongoose.Schema.Types.ObjectId, ref: "Unit", default: null },
 
     assignedUnit: {
       type: mongoose.Schema.Types.ObjectId,

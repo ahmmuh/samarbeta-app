@@ -10,7 +10,8 @@ export const getAllUsers = async (req, res) => {
       .populate("unit")
       .populate("keys")
       .populate("assignedWorkplaces")
-      .populate("clocks");
+      .populate("clocks")
+      .populate("assignedWorkplaces");
 
     // const usersWithClocks = await Promise.all(
     //   users.map(async (user) => {

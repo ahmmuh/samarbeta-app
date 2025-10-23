@@ -146,10 +146,10 @@ export const deleteMachine = async (req, res) => {
    🔵 LÅNA MASKIN
    ===================================================== */
 
+//Ny kod utan userId i body
+
 export const borrowMachine = async (req, res) => {
   const { machineId } = req.params;
-  const { userId } = req.body;
-
   try {
     const machine = await Machine.findById(machineId);
     if (!machine)
@@ -158,21 +158,19 @@ export const borrowMachine = async (req, res) => {
     if (!machine.isAvailable)
       return res.status(400).json({ message: "Maskinen är redan utlånad" });
 
-    // Uppdatera maskin
-    machine.borrowedBy = userId;
+    machine.borrowedBy = req.user._id;
     machine.borrowedDate = new Date();
     machine.returnedDate = null;
     machine.isAvailable = false;
 
     await machine.save();
 
-    // Skapa logg
     await MachineLog.create({
       machine: machine._id,
       action: "BORROWED",
-      performedBy: req.user?._id || null, // vem som lånar
-      unit: machine.unitId?._id || null,
-      workplace: machine.borrowedFrom || null, //
+      performedBy: req.user._id,
+      unit: machine.unitId || null,
+      workplace: machine.borrowedFrom || null,
     });
 
     return res.status(200).json({ message: "Maskin utlånad", machine });
