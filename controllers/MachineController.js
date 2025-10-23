@@ -146,10 +146,10 @@ export const deleteMachine = async (req, res) => {
    🔵 LÅNA MASKIN
    ===================================================== */
 
-//Ny kod utan userId i body
-
 export const borrowMachine = async (req, res) => {
   const { machineId } = req.params;
+  const { userId } = req.body; // Den person som maskinen lånas till
+
   try {
     const machine = await Machine.findById(machineId);
     if (!machine)
@@ -157,63 +157,33 @@ export const borrowMachine = async (req, res) => {
 
     if (!machine.isAvailable)
       return res.status(400).json({ message: "Maskinen är redan utlånad" });
-
-    machine.borrowedBy = req.user._id;
+    machine.borrowedBy = userId || req.user._id;
     machine.borrowedDate = new Date();
     machine.returnedDate = null;
     machine.isAvailable = false;
 
     await machine.save();
 
+    // 🔹 Logga att chefen utförde utlåningen
     await MachineLog.create({
       machine: machine._id,
       action: "BORROWED",
-      performedBy: req.user._id,
+      performedBy: req.user._id, // chefen som utför utlåningen
       unit: machine.unitId || null,
       workplace: machine.borrowedFrom || null,
     });
 
-    return res.status(200).json({ message: "Maskin utlånad", machine });
+    return res.status(200).json({
+      message: userId
+        ? "Maskin utlånad till vald användare"
+        : "Maskin utlånad till dig själv",
+      machine,
+    });
   } catch (error) {
     console.error("❌ borrowMachine error:", error);
     return res.status(500).json({ message: "Serverfel vid utlåning" });
   }
 };
-
-/* =====================================================
-   🟣 ÅTERLÄMNA MASKIN
-   ===================================================== */
-// export const returnMachine = async (req, res) => {
-//   const { machineId } = req.params;
-
-//   try {
-//     const machine = await Machine.findById(machineId);
-//     if (!machine)
-//       return res.status(404).json({ message: "Maskin hittades inte" });
-//     if (machine.isAvailable)
-//       return res.status(400).json({ message: "Maskinen är redan tillgänglig" });
-
-//     machine.returnedDate = new Date();
-//     machine.isAvailable = true;
-//     const borrower = machine.borrowedBy;
-//     machine.borrowedBy = null;
-//     machine.borrowedDate = null;
-
-//     await machine.save();
-
-//     await MachineLog.create({
-//       machineId,
-//       userId: borrower,
-//       action: "returned",
-//       details: `Maskin '${machine.name}' återlämnades`,
-//     });
-
-//     return res.status(200).json({ message: "Maskin återlämnad", machine });
-//   } catch (error) {
-//     console.error("❌ returnMachine error:", error);
-//     return res.status(500).json({ message: "Serverfel vid återlämning" });
-//   }
-// };
 
 export const returnMachine = async (req, res) => {
   const { machineId } = req.params;
@@ -233,18 +203,18 @@ export const returnMachine = async (req, res) => {
 
     await machine.save();
 
-    // Skapa logg
+    // Skapa logg (endast befintliga fält används)
     await MachineLog.create({
       machine: machine._id,
       action: "RETURNED",
-      performedBy: req.user?._id || null, // vem som lämnar tillbaka
-      unit: machine.unitId?._id || null,
-      workplace: machine.borrowedFrom || null, //
+      performedBy: req.user?._id || null,
+      unit: machine.unitId || null,
+      workplace: machine.borrowedFrom || null,
     });
 
-    return res.status(200).json(machine);
+    return res.status(200).json({ message: "Maskin återlämnad", machine });
   } catch (error) {
-    console.error("returnMachine error:", error);
+    console.error("❌ returnMachine error:", error);
     return res.status(500).json({ message: "Serverfel vid återlämning" });
   }
 };
