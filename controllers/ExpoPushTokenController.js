@@ -1,7 +1,9 @@
-import * as ExpoServerSdk from "expo-server-sdk";
+import { Expo } from "expo-server-sdk";
+
 import User from "../models/user.js";
 
-const { isExpoPushToken, sendPushNotificationsAsync } = ExpoServerSdk;
+// Skapa Expo-klient (enda instansen)
+const expo = new Expo();
 
 /* =========================================
    Hämta Expo push-tokens för en användare
@@ -21,6 +23,7 @@ export const getPushTokens = async (req, res) => {
       tokens: user.expoPushTokens,
     });
   } catch (error) {
+    console.error(error);
     return res
       .status(500)
       .json({ message: "Serverfel vid hämtning av Expo push tokens" });
@@ -89,7 +92,7 @@ export const sendPushNotis = async ({ user, title, body, data = {} }) => {
   }
 
   const messages = tokens
-    .filter((t) => isExpoPushToken(t))
+    .filter((t) => typeof t === "string" && t.startsWith("ExponentPushToken"))
     .map((token) => ({
       to: token,
       title,
@@ -104,9 +107,11 @@ export const sendPushNotis = async ({ user, title, body, data = {} }) => {
   }
 
   try {
-    const tickets = await sendPushNotificationsAsync(messages);
+    const chunks = expo.chunkPushNotifications(messages);
+    for (const chunk of chunks) {
+      await expo.sendPushNotificationsAsync(chunk);
+    }
     console.log(`✅ Push-notiser skickade till ${user.name}`);
-    return tickets;
   } catch (err) {
     console.error("Fel vid skickande av push-notis:", err);
   }
