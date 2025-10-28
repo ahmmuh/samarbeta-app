@@ -5,6 +5,13 @@ import User from "../models/user.js";
 
 export const getAllUsers = async (req, res) => {
   try {
+    await User.updateMany(
+      { expoPushToken: { $exists: true } }, // Hitta dokument med fältet
+      { $unset: { expoPushToken: "" } } // Ta bort fältet
+    );
+
+    console.log("Gamla expoPushToken-fält borttagna från alla användare.");
+
     const users = await User.find({ isDeleted: { $ne: true } })
       .select("-password")
       .populate("unit")

@@ -1,33 +1,39 @@
-import Expo from "expo-server-sdk";
+import * as ExpoServerSdk from "expo-server-sdk";
 import User from "../models/user.js";
 
-//Den finns för att kunna hämta befintlig expo token för att sedan kunna skicka notis/påminnelse till en specific användare
-export const getPushToken = async (req, res) => {
+const { isExpoPushToken, sendPushNotificationsAsync } = ExpoServerSdk;
+
+/* =========================================
+   Hämta Expo push-tokens för en användare
+========================================= */
+export const getPushTokens = async (req, res) => {
   const { userId } = req.body;
   try {
     const user = await User.findById(userId).select("-password");
-    const pushToken = user.expoPushToken;
-    if (!pushToken) {
+    if (!user || !user.expoPushTokens || user.expoPushTokens.length === 0) {
       return res
         .status(400)
-        .json({ message: "Push token hittades inte i databasen" });
+        .json({ message: "Push tokens hittades inte i databasen" });
     }
 
-    return res.status(200).json({ message: `Hämtad token: ${pushToken}` });
+    return res.status(200).json({
+      message: `Hämtade tokens: ${user.expoPushTokens}`,
+      tokens: user.expoPushTokens,
+    });
   } catch (error) {
     return res
       .status(500)
-      .json({ message: "Serverfel vid hämtning av expo push token" });
+      .json({ message: "Serverfel vid hämtning av Expo push tokens" });
   }
 };
 
-//Spara Expo push-token i användarens dokument
+/* =========================================
+   Spara Expo push-token för användare
+   Stödjer flera enheter
+========================================= */
 export const saveExpoPushToken = async (req, res) => {
   const userId = req.user._id;
   const { expoPushToken } = req.body;
-
-  console.log("EXPO PUSH TOKEN", expoPushToken);
-  console.log("ID för: Inloggade användare som ska få expo push token", userId);
 
   try {
     const user = await User.findById(userId);
@@ -37,81 +43,71 @@ export const saveExpoPushToken = async (req, res) => {
         .json({ message: `Användare med ID ${userId} hittades inte` });
     }
 
-    const updatedUserWithExpoToken = await User.findByIdAndUpdate(userId, {
-      expoPushToken,
-    });
+    // Om det finns gammalt fält som sträng, flytta in det i arrayen
+    if (user.expoPushToken) {
+      if (!user.expoPushTokens) user.expoPushTokens = [];
+      if (!user.expoPushTokens.includes(user.expoPushToken)) {
+        user.expoPushTokens.push(user.expoPushToken);
+      }
+      user.expoPushToken = undefined; // ta bort gamla strängen
+    }
+
+    // Skapa array om den inte finns
+    if (!user.expoPushTokens) user.expoPushTokens = [];
+
+    // Lägg bara till token om den inte redan finns
+    if (!user.expoPushTokens.includes(expoPushToken)) {
+      user.expoPushTokens.push(expoPushToken);
+    }
+
+    await user.save();
+
     return res.status(200).json({
       success: true,
-      message: `Användare med ID ${userId} och expo push token ${expoPushToken} har uppdaterats `,
+      message: `Push token ${expoPushToken} har lagts till för användare ${userId}`,
     });
   } catch (error) {
+    console.error(error);
     return res
       .status(500)
-      .json({ message: "Serverfel vid uppdatering av expoPushToken" });
+      .json({ message: "Serverfel vid uppdatering av Expo push tokens" });
   }
 };
 
-//Skicka en push-notis till en specifik användare via Expo’s push-service
-
-// export const sendPushNotis = async (req, res) => {
-//   const { userId } = req.body;
-//   try {
-//     const user = await User.findById(userId);
-
-//     if (!user) {
-//       return res.status(404).json({ message: "Användare hittades inte" });
-//     }
-
-//     console.log(
-//       "Användare med push-notis token från ExpoPushTokenContoller:",
-//       user
-//     );
-//     const expoPushToken = user.expoPushToken;
-
-//     if (!expoPushToken || !Expo.isExpoPushToken(expoPushToken)) {
-//       return res
-//         .status(400)
-//         .json({ message: "Ogiltig eller saknad Expo push-token" });
-//     }
-//     const expoClient = new Expo();
-//     const message = {
-//       to: expoPushToken,
-//       title: title || "Ny notis",
-//       body: body || "Du har ett nytt meddelande",
-//       sound: "default",
-//       data: data || {},
-//     };
-//     const tickets = await expoClient.sendPushNotificationsAsync([message]);
-
-//     return res
-//       .status(200)
-//       .json({ success: true, message: "Push-notis skickad", tickets });
-//   } catch (error) {
-//     return res
-//       .status(500)
-//       .json({ message: "Serverfel när push-notis skulle skickas" });
-//   }
-// };
-
-// Intern funktion för att skicka push-notis till en specifik användare
-export const sendPushNotis = async ({ userId, title, body, data = {} }) => {
-  const user = await User.findById(userId);
+/* =========================================
+   Intern funktion för att skicka push-notiser
+   till alla tokens för en användare
+========================================= */
+export const sendPushNotis = async ({ user, title, body, data = {} }) => {
   if (!user) throw new Error("Användare hittades inte");
 
-  const expoPushToken = user.expoPushToken;
-  if (!expoPushToken || !Expo.isExpoPushToken(expoPushToken)) {
-    throw new Error("Ogiltig eller saknad Expo push-token");
+  const tokens = user.expoPushTokens || [];
+
+  if (tokens.length === 0) {
+    console.log(`⚠️ Ingen expoPushToken för användare ${user.name}`);
+    return;
   }
 
-  const expoClient = new Expo();
-  const message = {
-    to: expoPushToken,
-    title,
-    body,
-    sound: "default",
-    data,
-  };
+  const messages = tokens
+    .filter((t) => isExpoPushToken(t))
+    .map((token) => ({
+      to: token,
+      title,
+      body,
+      sound: "default",
+      data,
+    }));
 
-  const tickets = await expoClient.sendPushNotificationsAsync([message]);
-  return tickets; // Returnerar tickets så du kan logga eller felsöka
+  if (messages.length === 0) {
+    console.log(`⚠️ Inga giltiga Expo-tokens för ${user.name}`);
+    return;
+  }
+
+  try {
+    const tickets = await sendPushNotificationsAsync(messages);
+    console.log(`✅ Push-notiser skickade till ${user.name}`);
+    return tickets;
+  } catch (err) {
+    console.error("Fel vid skickande av push-notis:", err);
+  }
 };

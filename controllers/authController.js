@@ -56,11 +56,21 @@ export const signIn = async (req, res, next) => {
     console.log("LOGIN FUNCTION KÖRS", req.body);
 
     const user = await User.findOne({ username }).populate("unit");
-    if (!user) return res.status(400).json({ message: "Invalid Credentials" });
+    if (!user)
+      return res
+        .status(400)
+        .json({ message: "Felaktiga inloggningsuppgifter" });
+    if (user.isDeleted) {
+      return res.status(403).json({
+        message: "Ditt konto är inaktiverat. Kontakta administratör.",
+      });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
-      return res.status(400).json({ message: "Invalid Credentials" });
+      return res
+        .status(400)
+        .json({ message: "Felaktiga inloggningsuppgifter" });
 
     const token = jwt.sign(
       {
@@ -87,29 +97,6 @@ export const signIn = async (req, res, next) => {
     next(err);
   }
 };
-
-// export const getCurrentUser = async (req, res) => {
-//   const authHeader = req.headers.authorization;
-
-//   if (!authHeader || !authHeader.startsWith("Bearer")) {
-//     return res.status(401).json({ message: "Ingen token" });
-//   }
-//   const token = authHeader.split(" ")[1];
-
-//   if (!token) {
-//     return res.status(401).json({ message: "Token hittades ej" });
-//   }
-
-//   try {
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-//     const user = await User.findById(decoded._id).select("-password");
-//     res.json(user);
-//   } catch (error) {
-//     return res
-//       .status(500)
-//       .json({ message: "Serverfel vid hämtning av användarens info" });
-//   }
-// };
 
 export const getCurrentUser = async (req, res) => {
   try {

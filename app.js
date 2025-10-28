@@ -66,4 +66,5 @@ app.use("/api/cronjobs", cronJobRoute);
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`The Server listening on port ${PORT}`);
   getConnection();
+  import("./cronJobs.js");
 });

@@ -38,7 +38,10 @@ const userSchema = new mongoose.Schema(
 
     keys: [{ type: mongoose.Schema.Types.ObjectId, ref: "KeyModel" }],
 
-    expoPushToken: String,
+    expoPushTokens: {
+      type: [String],
+      default: [],
+    },
   },
   {
     toJSON: { virtuals: true },
