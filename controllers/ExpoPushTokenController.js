@@ -87,7 +87,8 @@ export const sendPushNotis = async ({ user, title, body, data = {} }) => {
   const tokens = user.expoPushTokens || [];
 
   if (tokens.length === 0) {
-    console.log(`⚠️ Ingen expoPushToken för användare ${user.name}`);
+
+    // console.log(`⚠️ Ingen expoPushToken för användare ${user.name}`);
     return;
   }
 

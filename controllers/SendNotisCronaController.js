@@ -22,7 +22,7 @@ const getUnitRecipients = async (unitId) => {
    1) MASKINER – PÅMINNELSE
 =================================== */
 export const sendOverdueMachineNotifications = async () => {
-  console.log("⏱ Kontrollera överlämnade maskiner...");
+  //   console.log("⏱ Kontrollera överlämnade maskiner...");
   const oneMinuteAgo = new Date(Date.now() - 1 * 60 * 1000);
 
   const overdueMachines = await Machine.find({
@@ -33,7 +33,7 @@ export const sendOverdueMachineNotifications = async () => {
     { path: "unitId", select: "name" },
   ]);
 
-  console.log("🧾 Hittade maskiner:", overdueMachines.length);
+  //   console.log("🧾 Hittade maskiner:", overdueMachines.length);
 
   for (const machine of overdueMachines) {
     const recipients = [];
@@ -48,8 +48,13 @@ export const sendOverdueMachineNotifications = async () => {
         await sendPushNotis({
           user,
           title: "Påminnelse: Maskin",
-          body: `Maskinen "${machine.name}" är fortfarande utlånad.`,
+          body: `Maskinen "${machine.name}" är fortfarande utlånad, vänligen lämna tillbaka den.`,
         });
+
+        console.log(
+          "************************ ============= Maskiner ========================= *************************"
+        );
+
         console.log(
           `📩 Maskin-notis till: ${user.name} – Maskin: "${machine.name}"`
         );
@@ -64,7 +69,7 @@ export const sendOverdueMachineNotifications = async () => {
    2) NYCKLAR – PÅMINNELSE
 =================================== */
 export const sendOverdueKeyNotifications = async () => {
-  console.log("⏱ Kontrollera överlämnade nycklar...");
+  //   console.log("⏱ Kontrollera överlämnade nycklar...");
   const oneMinuteAgo = new Date(Date.now() - 1 * 60 * 1000);
 
   const overdueKeys = await KeyModel.find({
@@ -76,7 +81,7 @@ export const sendOverdueKeyNotifications = async () => {
     { path: "unit", select: "name" },
   ]);
 
-  console.log("🧾 Hittade nycklar:", overdueKeys.length);
+  //   console.log("🧾 Hittade nycklar:", overdueKeys.length);
 
   for (const key of overdueKeys) {
     const recipients = [];
@@ -91,8 +96,13 @@ export const sendOverdueKeyNotifications = async () => {
         await sendPushNotis({
           user,
           title: "Påminnelse: Nyckel",
-          body: `Nyckeln "${key.keyLabel}" är fortfarande utlånad.`,
+          body: `Nyckeln "${key.keyLabel}" är fortfarande utlånad, vänligen lämna tillbaka den.`,
         });
+
+        console.log(
+          "************************ ============= Nycklar ========================= *************************"
+        );
+
         console.log(
           `📩 Nyckel-notis till: ${user.name} – Nyckel: "${key.keyLabel}"`
         );
@@ -130,8 +140,12 @@ export const sendFlyttstadningNotifications = async () => {
             "Ingen adress"
           }`,
         });
+
         console.log(
-          `📩 Flyttstäd-notis till: ${user.name} – Lägenhet: "${
+          "************************ ============= Flyttstädning ========================= *************************"
+        );
+        console.log(
+          `📩 Flyttstäd-notis till: ${user.name}: "${
             apartment.apartmentLocation || apartment.description
           }"`
         );
@@ -169,6 +183,11 @@ export const sendMorningTaskNotification = async () => {
           title: "Nya Uppgifter Idag",
           body: `Uppgift: "${task.title}" (${task.address || "Ingen adress"})`,
         });
+
+        console.log(
+          "************************ ============= Morgonjobb ========================= *************************"
+        );
+
         console.log(
           `📩 Morgonnotis till: ${user.name} – Task: "${task.title}"`
         );
@@ -186,16 +205,18 @@ cron.schedule("* * * * *", async () => {
   console.log("⏱ Kör minutersnotiser...");
   await sendOverdueMachineNotifications();
   await sendOverdueKeyNotifications();
-});
-
-cron.schedule("0 6 * * *", async () => {
-  console.log("🌅 Skickar morgonjobb-notiser...");
   await sendMorningTaskNotification();
-});
-
-cron.schedule("0 * * * *", async () => {
-  console.log("🏠 Skickar flyttstäd-notiser...");
   await sendFlyttstadningNotifications();
 });
+
+// cron.schedule("* * * * *", async () => {
+//   console.log("🌅 Skickar morgonjobb-notiser...");
+//   await sendMorningTaskNotification();
+// });
+
+// cron.schedule("* * * * *", async () => {
+//   console.log("🏠 Skickar flyttstäd-notiser...");
+//   await sendFlyttstadningNotifications();
+// });
 
 console.log("✅ Cron-jobb modulen laddad!");
