@@ -18,6 +18,8 @@ export const clockIn = async (req, res) => {
 
     const { lastFour, location } = req.body;
 
+    console.log("Client coords:", location.coordinates);
+
     if (!location?.coordinates || location.coordinates.length !== 2) {
       return res.status(400).json({
         isError: true,
@@ -54,7 +56,7 @@ export const clockIn = async (req, res) => {
       location: {
         $near: {
           $geometry: { type: "Point", coordinates: location.coordinates },
-          $maxDistance: 100,
+          $maxDistance: 500,
         },
       },
     });
@@ -140,7 +142,7 @@ export const clockOut = async (req, res) => {
       location: {
         $near: {
           $geometry: { type: "Point", coordinates: location.coordinates },
-          $maxDistance: 100, // inom 100 m
+          $maxDistance: 500, // inom 100 m
         },
       },
     });
