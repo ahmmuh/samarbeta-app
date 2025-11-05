@@ -285,3 +285,24 @@ export const getAllUserClocks = async (req, res) => {
     });
   }
 };
+
+//Visa alla användare som clocked in
+
+export const getActiveClocks = async (req, res) => {
+  try {
+    const activeClocks = await Clock.find({ clockOutDate: null })
+      .populate({
+        path: "user",
+        select: "name unit",
+        populate: { path: "unit", select: "name" }, // <-- populera unit
+      })
+      .populate("workplace", "name");
+
+    res.json({ isError: false, activeClocks });
+  } catch (error) {
+    res.status(500).json({
+      isError: true,
+      message: error.message,
+    });
+  }
+};

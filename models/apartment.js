@@ -12,7 +12,7 @@ const apartmentSchema = new mongoose.Schema(
       default: "Ej påbörjat",
     },
 
-    priority: {
+    priority: { 
       type: String,
       enum: ["Låg", "Normal", "Hög"],
       default: "Normal",
